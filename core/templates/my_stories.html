@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block title %}My Stories{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-3 text-center">My Stories</h2>
+
+    <div class="text-center mb-4">
+        <a href="{% url 'core:create_post' %}" class="btn btn-success">Create New Story</a>
+    </div>
+
+    {% if stories %}
+    {% for story in stories %}
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <p>{{ story.content|truncatechars:150 }}</p>
+            <p class="text-muted small mb-2">
+                Created on {{ story.created_at|date:"M d, Y H:i" }}
+            </p>
+            <div class="d-flex gap-2">
+                <a href="{% url 'core:edit_post' story.id %}" class="btn btn-primary btn-sm">Edit</a>
+                <form method="post" action="{% url 'core:delete_post' story.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm"
+                        onclick="return confirm('Are you sure you want to delete this story?')">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <p class="text-center text-muted">You have not created any stories yet.</p>
+{% endif %}
+</div>
+{% endblock %}

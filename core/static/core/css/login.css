@@ -1,0 +1,93 @@
+.signup-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 20px;
+  }
+  
+  .signup-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 30px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+  }
+  
+  .signup-card:hover {
+    transform: translateY(-3px);
+  }
+  
+  .highlight {
+    color: #198754;
+  }
+  
+  .category-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  
+  .category-item {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    padding: 8px 12px;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+  
+  .category-item:hover {
+    background-color: #e9f6ef;
+    border-color: #198754;
+  }
+  
+  .category-item input {
+    display: none;
+  }
+  
+  .category-item input:checked + .emoji + .text,
+  .category-item input:checked + .emoji {
+    color: #198754;
+    font-weight: bold;
+  }
+  
+  .emoji {
+    font-size: 1.3rem;
+    margin-right: 8px;
+  }
+  
+  .text {
+    font-size: 0.95rem;
+  }
+  
+  .login-link {
+    color: #198754;
+    text-decoration: none;
+  }
+  
+  .login-link:hover {
+    text-decoration: underline;
+  }
+  
+  .category-item.selected {
+    background-color: #d4f8e8;
+    transform: scale(1.03);
+  }
+
+  /* --- Login Page tweaks --- */
+.signup-card.login {
+    background: #f9f9ff;
+  }
+  
+  .signup-card.login:hover {
+    background: #eef3ff;
+  }
+  
+  .signup-card h2 {
+    color: #0d6efd;
+  }
+  

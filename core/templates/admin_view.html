@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}All Stories{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h3>All User Stories</h3>
+    <hr>
+    {% for story in stories %}
+        <div class="card mb-3 shadow-sm">
+            <div class="card-body">
+                <p><strong>{{ story.user.username }}</strong>: {{ story.content|truncatechars:200 }}</p>
+                <small class="text-muted">Created: {{ story.created_at|date:"M d, Y H:i" }}</small>
+                <form method="post" action="{% url 'core:delete_post' story.id %}" class="d-inline float-end">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

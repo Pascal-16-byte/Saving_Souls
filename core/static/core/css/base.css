@@ -1,0 +1,74 @@
+/* Background and body */
+body.bg-light {
+    background: linear-gradient(135deg, #4b6cb7, #8a2be2);
+    color: #e0e0ff;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Navbar style */
+.navbar {
+    background: linear-gradient(90deg, #3a47d5, #7b2ac7);
+}
+.navbar-brand {
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: #d1c4e9 !important;
+}
+
+.nav-link {
+    color: #c5cae9 !important;
+    font-weight: 600;
+}
+.nav-link.active,
+.nav-link:hover {
+    color: #d1aaff !important;
+    text-decoration: underline;
+}
+
+/* Dropdown */
+.dropdown-menu {
+    background: #5a44a8;
+    border-radius: 10px;
+}
+.dropdown-item {
+    color: #d1c4e9;
+}
+.dropdown-item:hover {
+    background-color: #7e57c2;
+    color: white;
+}
+
+/* Alerts */
+.alert-success {
+    background: #7b68ee;
+    color: white;
+    border: none;
+}
+
+/* Buttons */
+.btn-primary {
+    background: #6a5acd;
+    border: none;
+}
+.btn-primary:hover,
+.btn-primary:focus {
+    background: #8470ff;
+}
+
+/* Floating Chat Button */
+.btn-primary.rounded-circle {
+    background: #7e57c2;
+    box-shadow: 0 4px 15px rgba(125, 81, 229, 0.6);
+}
+.btn-primary.rounded-circle:hover {
+    background: #ab82ff;
+    box-shadow: 0 6px 20px rgba(150, 95, 255, 0.8);
+}
+
+/* Container card style modification (optional) */
+.card {
+    background: rgba(138, 43, 226, 0.1);
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(138, 43, 226, 0.25);
+    color: #e0d7ff;
+}

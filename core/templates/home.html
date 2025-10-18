@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <!-- Catchy line -->
+    <div class="text-center mb-4">
+        <h3 class="fw-bold">You are not alone – read real stories, share your support, and spread hope!💫</h3>
+        <p class="text-muted">Discover inspiring stories from people just like you. Every story matters✨.</p>
+    </div>
+
+    <h2 class="mb-4">Latest Stories</h2>
+
+    {% for post in posts %}
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <p>{{ post.content|truncatechars:100 }}</p>
+            <p class="text-muted small mb-2">
+                by {{ post.display_author }} on {{ post.created_at|date:"M d, Y H:i" }}
+            </p>
+
+            <!-- Dynamic Reactions -->
+            {% if user.is_authenticated %}
+            <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-outline-danger btn-sm react-btn {% if 'heart' in post.user_reactions %}active btn-danger{% endif %}" data-post-id="{{ post.id }}" data-reaction="heart">
+                    ❤️ <span class="reaction-count">{{ post.reaction_counts.heart }}</span>
+                </button>
+                <button class="btn btn-outline-warning btn-sm react-btn {% if 'hug' in post.user_reactions %}active btn-warning{% endif %}" data-post-id="{{ post.id }}" data-reaction="hug">
+                    🤗 <span class="reaction-count">{{ post.reaction_counts.hug }}</span>
+                </button>
+                <button class="btn btn-outline-primary btn-sm react-btn {% if 'hands' in post.user_reactions %}active btn-primary{% endif %}" data-post-id="{{ post.id }}" data-reaction="hands">
+                    🙌 <span class="reaction-count">{{ post.reaction_counts.hands }}</span>
+                </button>
+            </div>
+            {% else %}
+            <p class="mt-2"><a href="{% url 'core:login' %}" class="btn btn-primary btn-sm">Login to React</a></p>
+            {% endif %}
+
+            <!-- Read More -->
+            <a href="{% url 'core:post_detail' post.id %}" class="btn btn-secondary btn-sm mt-2 btn-success">Read More</a>
+        </div>
+    </div>
+    {% empty %}
+    <p>No stories yet. Be the first to share your story!</p>
+    {% endfor %}
+</div>
+
+<!-- AJAX Script -->
+<script src="{% static 'core/js/react.js' %}"></script>
+{% endblock %}

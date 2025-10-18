@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Stories{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <h2 class="mb-3 text-center">Community Stories</h2>
+
+    <!-- Category Filter Only -->
+    <form method="get" class="mb-4 d-flex gap-2">
+        <select name="category" class="form-select">
+            <option value="">All Categories</option>
+            {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>
+                {{ cat.name }}
+            </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
+
+    <!-- Top Reacted Stories -->
+    {% if top_posts %}
+    <h4 class="mb-3">Top Reacted Stories</h4>
+    <div class="row mb-4">
+        {% for post in top_posts %}
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <p>{{ post.content|truncatechars:100 }}</p>
+                    <p class="text-muted small mb-1">
+                        by {{ post.display_author }} | Total Reactions: {{ post.total_reactions }}
+                    </p>
+
+                    {% if user.is_authenticated %}
+                    <div class="d-flex gap-2 mt-2">
+                        <button class="btn btn-outline-danger btn-sm react-btn {% if 'heart' in post.user_reactions %}active btn-danger{% endif %}" data-post-id="{{ post.id }}" data-reaction="heart">
+                            ❤️ <span class="reaction-count">{{ post.reaction_counts.heart }}</span>
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm react-btn {% if 'hug' in post.user_reactions %}active btn-warning{% endif %}" data-post-id="{{ post.id }}" data-reaction="hug">
+                            🤗 <span class="reaction-count">{{ post.reaction_counts.hug }}</span>
+                        </button>
+                        <button class="btn btn-outline-primary btn-sm react-btn {% if 'hands' in post.user_reactions %}active btn-primary{% endif %}" data-post-id="{{ post.id }}" data-reaction="hands">
+                            🙌 <span class="reaction-count">{{ post.reaction_counts.hands }}</span>
+                        </button>
+                    </div>
+                    {% else %}
+                    <p class="mt-2"><a href="{% url 'core:login' %}" class="btn btn-primary btn-sm">Login to React</a></p>
+                    {% endif %}
+
+                    <a href="{% url 'core:post_detail' post.id %}" class="btn btn-sm btn-success mt-2 w-100">Read More</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- All Stories -->
+    <h4 class="mb-3">All Stories</h4>
+    {% for post in posts %}
+    <div class="card mb-3 shadow-sm">
+        <div class="card-body">
+            <p>{{ post.content|truncatechars:150 }}</p>
+            <p class="text-muted small mb-2">
+                by {{ post.display_author }} on {{ post.created_at|date:"M d, Y H:i" }}
+            </p>
+
+            {% if user.is_authenticated %}
+            <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-outline-danger btn-sm react-btn {% if 'heart' in post.user_reactions %}active btn-danger{% endif %}" data-post-id="{{ post.id }}" data-reaction="heart">
+                    ❤️ <span class="reaction-count">{{ post.reaction_counts.heart }}</span>
+                </button>
+                <button class="btn btn-outline-warning btn-sm react-btn {% if 'hug' in post.user_reactions %}active btn-warning{% endif %}" data-post-id="{{ post.id }}" data-reaction="hug">
+                    🤗 <span class="reaction-count">{{ post.reaction_counts.hug }}</span>
+                </button>
+                <button class="btn btn-outline-primary btn-sm react-btn {% if 'hands' in post.user_reactions %}active btn-primary{% endif %}" data-post-id="{{ post.id }}" data-reaction="hands">
+                    🙌 <span class="reaction-count">{{ post.reaction_counts.hands }}</span>
+                </button>
+            </div>
+            {% else %}
+            <p class="mt-2"><a href="{% url 'core:login' %}" class="btn btn-primary btn-sm">Login to React</a></p>
+            {% endif %}
+
+            <a href="{% url 'core:post_detail' post.id %}" class="btn btn-secondary btn-sm mt-2 btn-success">Read More</a>
+        </div>
+    </div>
+    {% empty %}
+    <p>No stories found.</p>
+    {% endfor %}
+
+    <!-- Pagination -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if posts.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ posts.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">Previous</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+            {% endif %}
+
+            {% for num in posts.paginator.page_range %}
+            <li class="page-item {% if posts.number == num %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
+            </li>
+            {% endfor %}
+
+            {% if posts.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ posts.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">Next</a>
+            </li>
+            {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+</div>
+
+<!-- AJAX Script -->
+<script src="{% static 'core/js/react.js' %}"></script>
+{% endblock %}

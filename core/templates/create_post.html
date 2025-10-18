@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}Create Story{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Share Your Story</h2>
+
+    <div class="card shadow-sm p-4">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="content" class="form-label">Your Story</label>
+                <textarea name="content" id="content" rows="4" class="form-control" placeholder="Share your story..."></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="category" class="form-label">Select Category (optional)</label>
+                <select name="category" id="category" class="form-select">
+                    <option value="">-- None --</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}">{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" id="anonymous" name="anonymous">
+                <label class="form-check-label" for="anonymous">Post Anonymously</label>
+            </div>            
+            <button type="submit" class="btn btn-success w-100">Post Story</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

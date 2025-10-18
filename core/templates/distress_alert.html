@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Distress Alerts{% endblock %}
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4 text-center text-danger">⚠️ Distress Alerts</h2>
+  
+  {% if alerts %}
+    <div class="list-group">
+      {% for alert in alerts %}
+        <div class="list-group-item shadow-sm mb-2 rounded d-flex justify-content-between align-items-start">
+          <div>
+            <strong>User:</strong> {{ alert.user.username }}<br>
+            <strong>Message:</strong> {{ alert.message }}<br>
+            <strong>Distress Level:</strong>
+            <span class="text-danger fw-bold">{{ alert.distress_level }}</span><br>
+            <small class="text-muted">{{ alert.created_at }}</small>
+          </div>
+
+          <!-- 🗑️ Delete Button -->
+          <form method="POST" action="{% url 'core:delete_alert' alert.id %}" onsubmit="return confirm('Are you sure you want to delete this alert?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm ms-3">
+              <i class="bi bi-trash"></i> Delete
+            </button>
+          </form>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-center text-secondary">No distress alerts detected yet. 🎉</p>
+  {% endif %}
+</div>
+
+<!-- Bootstrap Icons (optional for trash icon) -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+{% endblock %}

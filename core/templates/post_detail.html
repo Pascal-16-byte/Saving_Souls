@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Story Detail{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+
+    <!-- Story Card -->
+    <div class="card p-4 shadow-sm mb-4">
+        <p class="fs-5">{{ post.content }}</p>
+        <p class="text-muted mt-2">
+            Posted by <strong>{{ post.display_author }}</strong> on {{ post.created_at|date:"M d, Y H:i" }}
+        </p>
+    </div>
+
+    <hr>
+
+    <!-- Comments Section -->
+    <h5 class="mb-3">Comments ({{ post.comments.count }})</h5>
+
+    {% for comment in post.comments.all %}
+  <div class="border rounded p-2 mb-2 {% if comment.author.is_superuser %}bg-light{% endif %}">
+    <strong>
+      {% if comment.anonymous %}
+        {{ comment.display_author }}
+      {% else %}
+        {{ comment.author.username }}
+      {% endif %}
+    </strong>:
+    {{ comment.content }}
+  </div>
+{% endfor %}
+
+    <!-- Add Comment Form -->
+    {% if user.is_authenticated %}
+    <div class="card mt-4 p-3 shadow-sm">
+        <form method="POST">
+            {% csrf_token %}
+            <div class="mb-3">
+                {{ form.content }}
+            </div>
+            <div class="form-check mb-3">
+                {{ form.anonymous }}
+                <label class="form-check-label" for="id_anonymous">Comment Anonymously</label>
+            </div>
+            <button type="submit" class="btn btn-success w-100">Post Comment</button>
+        </form>
+    </div>
+    {% else %}
+    <p class="mt-4 text-center">
+        <a href="{% url 'core:login' %}" class="btn btn-primary">Login to Comment</a>
+    </p>
+    {% endif %}
+
+</div>
+
+<!-- Load AJAX reactions script -->
+<script src="{% static 'core/js/react.js' %}"></script>
+{% endblock %}
