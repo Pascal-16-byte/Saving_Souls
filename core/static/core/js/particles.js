@@ -13,7 +13,7 @@ particlesJS("particles-js", {
         "value": ["#6a5acd", "#7b68ee", "#8a2be2", "#9370db"]
       },
       "shape": {
-        "type": "circle"
+        "type": "round"
       },
       "opacity": {
         "value": 0.9,

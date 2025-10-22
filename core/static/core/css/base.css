@@ -8,7 +8,12 @@ body.bg-light {
 /* Navbar style */
 .navbar {
     background: linear-gradient(90deg, #3a47d5, #7b2ac7);
+    position: relative;
+    z-index: 1000 !important;
+    pointer-events: auto !important; /* Ensure navbar remains interactive */
+    animation: fadeIn 1.2s ease-in-out;
 }
+
 .navbar-brand {
     font-weight: 700;
     font-size: 1.6rem;
@@ -25,15 +30,13 @@ body.bg-light {
     text-decoration: underline;
 }
 
-/* Dropdown */
-.dropdown-menu {
-    background: #5a44a8;
-    border-radius: 10px;
+.dropdown-item.btn {
+    width: 100%;
+    text-align: left;
+    cursor: pointer !important;
+    padding: 8px 16px;
 }
-.dropdown-item {
-    color: #d1c4e9;
-}
-.dropdown-item:hover {
+.dropdown-item.btn:hover {
     background-color: #7e57c2;
     color: white;
 }
@@ -65,10 +68,129 @@ body.bg-light {
     box-shadow: 0 6px 20px rgba(150, 95, 255, 0.8);
 }
 
-/* Container card style modification (optional) */
-.card {
+/* ===========================================
+   Animations and Motion Effects
+   =========================================== */
+
+/* Fade-in animation for page load */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .navbar {
+    animation: fadeIn 1.2s ease-in-out;
+  }
+
+  .navbar.scrolled .dropdown-menu {
+    pointer-events: auto; /* Ensure dropdown remains interactive */
+}
+
+  /* Smooth hover grow for cards and btns */
+  @keyframes hoverGrow {
+    from { transform: scale(1); }
+    to { transform: scale(1.05); }
+  }
+  
+  /* Apply page fade-in */
+  body {
+    animation: fadeIn 1.2s ease-in-out;
+  }
+  
+  /* Card animation */
+  .card {
     background: rgba(138, 43, 226, 0.1);
     border-radius: 12px;
     box-shadow: 0 8px 16px rgba(138, 43, 226, 0.25);
     color: #e0d7ff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(138, 43, 226, 0.35);
+  }
+  
+  /* Navbar link subtle underline slide */
+  /* Navbar links styled as buttons */
+.nav-link {
+    background: rgba(123, 104, 238, 0.15);
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 6px 14px;
+    margin: 0 4px;
+    transition: all 0.3s ease;
+    color: #e0d7ff !important;
+    font-weight: 600;
+  }
+  
+  .nav-link:hover,
+  .nav-link.active {
+    background: linear-gradient(90deg, #6a5acd, #8a2be2);
+    border: 1px solid #d1aaff;
+    color: #ffffff !important;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(138, 43, 226, 0.4);
+  }
+  
+  /* Special styling for staff alert link */
+  .nav-link.text-danger.fw-bold {
+    background: rgba(255, 64, 129, 0.15);
+    border: 1px solid rgba(255, 64, 129, 0.3);
+  }
+  .nav-link.text-danger.fw-bold:hover {
+    background: linear-gradient(90deg, #ff4081, #c2185b);
+    box-shadow: 0 4px 10px rgba(255, 64, 129, 0.5);
+    color: #fff !important;
+  }
+  
+  /* Chat button breathing animation */
+  .btn-primary.rounded-circle {
+    animation: pulse 2.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(125, 81, 229, 0.4); }
+    50% { box-shadow: 0 0 20px rgba(150, 95, 255, 0.8); }
+  }
+  
+  /* Fade-up effect for alerts */
+  .alert {
+    animation: fadeIn 0.8s ease;
+  }
+
+/* Slight highlight on hover for clarity */
+.dropdown-item:hover {
+    background: #7e57c2;
+    color: #fff !important;
+    text-decoration: none;
 }
+
+  /* Fix overlapping issue for dropdown menu & clickable logout button */
+.dropdown-menu {
+    position: absolute !important;
+    z-index: 2000 !important;      /* Ensure it's above other layers */
+    pointer-events: auto !important;
+  }
+  
+  .dropdown-item,
+  .dropdown-item button,
+  .dropdown-item[type="submit"],
+  .dropdown-item:focus,
+  .dropdown-item:active {
+    position: relative;
+    z-index: 2100 !important;
+    cursor: pointer !important;
+  }
+  
+  /* Ensure particles background stays behind everything */
+  #particles-js {
+    z-index: -10 !important;
+    pointer-events: none !important;
+  }
+
+  .navbar {
+    position: relative;
+    z-index: 1000 !important;
+    pointer-events: auto !important; /* Ensure navbar remains interactive */
+    animation: fadeIn 1.2s ease-in-out;
+  }
+  
