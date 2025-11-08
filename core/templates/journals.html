@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Journals | SavingSouls{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="page-title">
+      <i class="bi bi-feather me-2"></i>🔰 My Journals
+    </h2>
+    <a href="{% url 'core:create_journal' %}" class="btn btn-outline-light">
+      <i class="bi bi-plus-circle me-1"></i> New Journal Entry
+    </a>
+  </div>
+
+  {% if journals %}
+    <div class="row g-4">
+      {% for journal in journals %}
+        <div class="col-md-6 col-lg-4">
+          <div class="card bg-dark text-white border-0 shadow-sm h-100">
+            <div class="card-body d-flex flex-column">
+              <h5 class="card-title text-light">
+                {{ journal.title|truncatechars:40 }}
+              </h5>
+              <p class="card-text text-muted small mb-3">
+                {{ journal.created_at|date:"M d, Y" }}
+              </p>
+              <p class="card-text flex-grow-1">
+                {{ journal.content|truncatechars:120 }}
+              </p>
+              <div class="d-flex justify-content-between align-items-center mt-3">
+                <a href="{% url 'core:journal_detail' journal.id %}" class="btn btn-sm btn-primary">
+                  <i class="bi bi-book-half me-1"></i> View
+                </a>
+                <div class="d-flex gap-2">
+                  <a href="{% url 'core:edit_journal' journal.id %}" class="btn btn-sm btn-outline-info">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <form method="post" action="{% url 'core:delete_journal' journal.id %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                      <i class="bi bi-trash"></i>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5">
+      <i class="bi bi-journal-x display-4 text-muted"></i>
+      <h5 class="mt-3 text-white fw-semibold">No journal entries yet.</h5>
+      <p class="text-light opacity-75">Start by writing your first reflection.</p>
+  {% endif %}
+</div>
+
+<style>
+  /* ----------------- Visibility Fixes ----------------- */
+  .page-title {
+    color: #ffffff !important;
+    text-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+    font-weight: 800;
+    font-size: 2.3rem;
+    letter-spacing: 0.5px;
+  }
+
+  .card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 15px rgba(138, 43, 226, 0.3);
+  }
+
+  .text-light {
+    color: #f5f5f5 !important;
+  }
+
+  .text-muted {
+    color: rgba(255, 255, 255, 0.65) !important;
+  }
+</style>
+{% endblock %}

@@ -7,18 +7,18 @@
 
     <!-- Story Card -->
     <div class="card p-4 shadow-sm mb-4">
-        <p class="fs-5">{{ post.content }}</p>
+        <p class="fs-5">{{ story.content }}</p>
         <p class="text-muted mt-2">
-            Posted by <strong>{{ post.display_author }}</strong> on {{ post.created_at|date:"M d, Y H:i" }}
+            Posted by <strong>{{ story.display_author }}</strong> on {{ story.created_at|date:"M d, Y H:i" }}
         </p>
     </div>
 
     <hr>
 
     <!-- Comments Section -->
-    <h5 class="mb-3">Comments ({{ post.comments.count }})</h5>
+    <h5 class="mb-3">Comments ({{ story.comments.count }})</h5>
 
-    {% for comment in post.comments.all %}
+    {% for comment in story.comments.all %}
   <div class="border rounded p-2 mb-2 {% if comment.author.is_superuser %}bg-light{% endif %}">
     <strong>
       {% if comment.anonymous %}

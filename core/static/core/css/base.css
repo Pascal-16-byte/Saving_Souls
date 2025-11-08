@@ -1,196 +1,319 @@
-/* Background and body */
-body.bg-light {
-    background: linear-gradient(135deg, #4b6cb7, #8a2be2);
-    color: #e0e0ff;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* core/css/base.css */
+
+/* Body background & font */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #6a11cb, #2575fc); /* blue to purple gradient */
+  color: #fff;
+  min-height: 100vh;
 }
 
-/* Navbar style */
+/* ================= NAVBAR ================= */
+/* Animated Blue-Purple Gradient Navbar */
 .navbar {
-    background: linear-gradient(90deg, #3a47d5, #7b2ac7);
-    position: relative;
-    z-index: 1000 !important;
-    pointer-events: auto !important; /* Ensure navbar remains interactive */
-    animation: fadeIn 1.2s ease-in-out;
+  background: linear-gradient(270deg, #6a11cb, #2575fc, #6a11cb); /* start colors */
+  background-size: 600% 600%; /* larger for smooth animation */
+  animation: gradient-animation 15s ease infinite;
+  backdrop-filter: blur(10px) !important; /* blur effect */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+  padding: 0.8rem 1rem !important;
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 1000 !important;
+  transition: box-shadow 0.3s !important;
 }
 
+/* Gradient Animation Keyframes */
+@keyframes gradient-animation {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Brand */
 .navbar-brand {
-    font-weight: 700;
-    font-size: 1.6rem;
-    color: #d1c4e9 !important;
+  font-weight: bold;
+  font-size: 1.6rem;
+  letter-spacing: 1px;
+  text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
+}
+.navbar-brand span {
+  color: white
 }
 
+/* Links */
 .nav-link {
-    color: #c5cae9 !important;
-    font-weight: 600;
-}
-.nav-link.active,
-.nav-link:hover {
-    color: #d1aaff !important;
-    text-decoration: underline;
+  color: #e0e0e0 !important;
+  font-weight: 500;
+  transition: color 0.3s, transform 0.2s, background-color 0.3s;
+  border-radius: 20px;
+  padding: 8px 16px;
 }
 
-.dropdown-item.btn {
-    width: 100%;
-    text-align: left;
-    cursor: pointer !important;
-    padding: 8px 16px;
+.nav-link:hover,
+.nav-link.active {
+  color: #ffeb3b !important;
+  transform: scale(1.05);
+  text-shadow: 0 0 5px rgba(255,235,59,0.7);
+  background-color: rgba(138, 43, 226, 0.2);
 }
-.dropdown-item.btn:hover {
-    background-color: #7e57c2;
-    color: white;
+
+.nav-link-alert {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: #ff6b6b !important;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  backdrop-filter: blur(8px);
+}
+
+.dropdown-item {
+  color: #fff !important;
+  transition: background 0.3s, color 0.3s;
+  padding: 8px 16px;
+}
+
+.dropdown-divider {
+    border-color: #333;
+}
+
+/* ================= DROPDOWN HOVER ================= */
+.dropdown-item:hover {
+  background: linear-gradient(90deg, #6a11cb, #2575fc); /* match navbar gradient */
+  color: #fff !important;
+  text-shadow: 0 0 5px rgba(255, 235, 59, 0.7);
+  transform: scale(1.03);
 }
 
 /* Alerts */
-.alert-success {
-    background: #7b68ee;
-    color: white;
-    border: none;
+.alert {
+  border-radius: 0.5rem;
+  font-weight: 500;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.4);
+  border: none;
 }
 
-/* Buttons */
-.btn-primary {
-    background: #6a5acd;
-    border: none;
-}
-.btn-primary:hover,
-.btn-primary:focus {
-    background: #8470ff;
-}
-
-/* Floating Chat Button */
-.btn-primary.rounded-circle {
-    background: #7e57c2;
-    box-shadow: 0 4px 15px rgba(125, 81, 229, 0.6);
-}
-.btn-primary.rounded-circle:hover {
-    background: #ab82ff;
-    box-shadow: 0 6px 20px rgba(150, 95, 255, 0.8);
+/* Container content cards */
+.container .card {
+  background: rgba(255, 255, 255, 0.05);
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  transition: transform 0.3s, box-shadow 0.3s;
 }
 
-/* ===========================================
-   Animations and Motion Effects
-   =========================================== */
-
-/* Fade-in animation for page load */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .navbar {
-    animation: fadeIn 1.2s ease-in-out;
-  }
-
-  .navbar.scrolled .dropdown-menu {
-    pointer-events: auto; /* Ensure dropdown remains interactive */
+.container .card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.7);
 }
 
-  /* Smooth hover grow for cards and btns */
-  @keyframes hoverGrow {
-    from { transform: scale(1); }
-    to { transform: scale(1.05); }
-  }
-  
-  /* Apply page fade-in */
-  body {
-    animation: fadeIn 1.2s ease-in-out;
-  }
-  
-  /* Card animation */
-  .card {
-    background: rgba(138, 43, 226, 0.1);
-    border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(138, 43, 226, 0.25);
-    color: #e0d7ff;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-  }
-  .card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 12px 24px rgba(138, 43, 226, 0.35);
-  }
-  
-  /* Navbar link subtle underline slide */
-  /* Navbar links styled as buttons */
-.nav-link {
-    background: rgba(123, 104, 238, 0.15);
-    border: 1px solid transparent;
-    border-radius: 8px;
-    padding: 6px 14px;
-    margin: 0 4px;
-    transition: all 0.3s ease;
-    color: #e0d7ff !important;
-    font-weight: 600;
-  }
-  
-  .nav-link:hover,
-  .nav-link.active {
-    background: linear-gradient(90deg, #6a5acd, #8a2be2);
-    border: 1px solid #d1aaff;
-    color: #ffffff !important;
-    text-decoration: none;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 10px rgba(138, 43, 226, 0.4);
-  }
-  
-  /* Special styling for staff alert link */
-  .nav-link.text-danger.fw-bold {
-    background: rgba(255, 64, 129, 0.15);
-    border: 1px solid rgba(255, 64, 129, 0.3);
-  }
-  .nav-link.text-danger.fw-bold:hover {
-    background: linear-gradient(90deg, #ff4081, #c2185b);
-    box-shadow: 0 4px 10px rgba(255, 64, 129, 0.5);
-    color: #fff !important;
-  }
-  
-  /* Chat button breathing animation */
-  .btn-primary.rounded-circle {
-    animation: pulse 2.5s infinite;
-  }
-  @keyframes pulse {
-    0%, 100% { box-shadow: 0 0 0 rgba(125, 81, 229, 0.4); }
-    50% { box-shadow: 0 0 20px rgba(150, 95, 255, 0.8); }
-  }
-  
-  /* Fade-up effect for alerts */
-  .alert {
-    animation: fadeIn 0.8s ease;
-  }
-
-/* Slight highlight on hover for clarity */
-.dropdown-item:hover {
-    background: #7e57c2;
-    color: #fff !important;
-    text-decoration: none;
+/* Navbar Buttons */
+.navbar .btn-primary {
+  background-color: #0d6efd !important;
+  border: none !important;
+  transition: all 0.2s !important;
+  padding: 0.4rem 1rem !important;
+  font-weight: 500 !important;
 }
 
-  /* Fix overlapping issue for dropdown menu & clickable logout button */
-.dropdown-menu {
-    position: absolute !important;
-    z-index: 2000 !important;      /* Ensure it's above other layers */
-    pointer-events: auto !important;
-  }
-  
-  .dropdown-item,
-  .dropdown-item button,
-  .dropdown-item[type="submit"],
-  .dropdown-item:focus,
-  .dropdown-item:active {
-    position: relative;
-    z-index: 2100 !important;
-    cursor: pointer !important;
-  }
-  
-  /* Ensure particles background stays behind everything */
-  #particles-js {
-    z-index: -10 !important;
-    pointer-events: none !important;
-  }
+.navbar .btn-primary:not(.get-started-btn):hover {
+  opacity: 0.9 !important;
+  transform: none !important;
+}
 
-  .navbar {
-    position: relative;
-    z-index: 1000 !important;
-    pointer-events: auto !important; /* Ensure navbar remains interactive */
-    animation: fadeIn 1.2s ease-in-out;
+/* Get Started Button */
+.get-started-btn {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 12px 28px !important;
+  background-color: #006aff !important;
+  border: 6px solid #c0dfff !important;
+  color: white !important;
+  gap: 8px;
+  border-radius: 50px !important;
+  cursor: pointer;
+  transition: all 0.3s !important;
+  font-size: 1.1em !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  margin-left: 10px !important;
+  height: 46px !important;
+}
+
+.get-started-btn .svg-icon {
+  padding-top: 5px;
+  height: 100%;
+  width: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.get-started-btn .svg-icon svg {
+  width: 30px;
+  height: 18px;
+  transition: transform 0.3s;
+}
+
+.get-started-btn:hover {
+  border: 6px solid #b1d8ff !important;
+  background-color: #1b7aff !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+.get-started-btn:active {
+  border: 4px solid #c0dfff !important;
+  transform: translateY(0) !important;
+}
+
+.get-started-btn:hover .svg-icon svg {
+  animation: jello-vertical 0.9s both;
+  transform-origin: left;
+}
+
+@keyframes jello-vertical {
+  0% { transform: scale3d(1, 1, 1); }
+  30% { transform: scale3d(0.75, 1.25, 1); }
+  40% { transform: scale3d(1.25, 0.75, 1); }
+  50% { transform: scale3d(0.85, 1.15, 1); }
+  65% { transform: scale3d(1.05, 0.95, 1); }
+  75% { transform: scale3d(0.95, 1.05, 1); }
+  100% { transform: scale3d(1, 1, 1); }
+}
+
+/* ================= FLOATING CHAT BUTTON ================= */
+/* .btn-primary.rounded-circle {
+  background: linear-gradient(135deg, #6a11cb, #2575fc) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 
+              0 0 15px rgba(106, 17, 203, 0.5), 
+              0 0 25px rgba(37, 117, 252, 0.5) !important;
+  transition: transform 0.2s, box-shadow 0.3s !important;
+} */
+
+/* .btn-primary.rounded-circle:hover {
+  transform: scale(1.15) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7),
+              0 0 20px rgba(106, 17, 203, 0.8),
+              0 0 30px rgba(37, 117, 252, 0.8) !important;
+} */
+
+#chat-button {
+  background: linear-gradient(135deg, #6a11cb, #2575fc) !important;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 
+              0 0 15px rgba(106, 17, 203, 0.5), 
+              0 0 25px rgba(37, 117, 252, 0.5) !important;
+  transition: transform 0.2s, box-shadow 0.3s !important;
+}
+
+#chat-button:hover {
+  transform: scale(1.15) !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7),
+              0 0 20px rgba(106, 17, 203, 0.8),
+              0 0 30px rgba(37, 117, 252, 0.8) !important;
+}
+/* Forms */
+form input,
+form textarea,
+form select {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+}
+
+/* Optional: add subtle pulse animation to chat button */
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6),
+                0 0 15px rgba(106, 17, 203, 0.5),
+                0 0 25px rgba(37, 117, 252, 0.5);
   }
-  
+  50% {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7),
+                0 0 20px rgba(106, 17, 203, 0.7),
+                0 0 30px rgba(37, 117, 252, 0.7);
+  }
+  100% {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6),
+                0 0 15px rgba(106, 17, 203, 0.5),
+                0 0 25px rgba(37, 117, 252, 0.5);
+  }
+}
+
+/* .btn-primary.rounded-circle {
+  animation: pulse-glow 2.5s infinite ease-in-out !important;
+} */
+
+form input:focus,
+form textarea:focus,
+form select:focus {
+  outline: none;
+  border-color: #ffeb3b;
+  box-shadow: 0 0 8px rgba(255, 235, 59, 0.5);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Links */
+a {
+  color: #ffeb3b;
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: #fff;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6a11cb, #2575fc);
+  border-radius: 10px;
+}
+
+/* ---------- Prevent unwanted text-caret & selection on headings/labels/chips ---------- */
+
+/* Headings should use default cursor and not show a text insertion caret */
+h1, h2, h3, h4, h5, h6 {
+  cursor: default;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Labels and interactive chips behave like buttons (pointer cursor) and are not text-selectable */
+label,
+.category-chip,
+.navbar-brand,
+.btn,
+.nav-link,
+.dropdown-item {
+  cursor: pointer;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Keep normal text selection and insertion cursor for real form controls */
+input, textarea, select, option, [contenteditable="true"] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+  cursor: text;
+}

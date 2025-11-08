@@ -3,15 +3,24 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}LifeSupport{% endblock %}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
   <link rel="stylesheet" href="{% static 'core/css/base.css' %}">
+  {% block additional_head %}{% endblock %}
 </head>
-<body class="bg-light">
-  <div id="particles-js" style="position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -1;"></div>
-  <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+<body style="background-color: #121212; color: white; font-family: 'Segoe UI', Arial, sans-serif;">
+  <!-- Particles.js background -->
+  <div id="particles-js" style="position: fixed; width: 100%; height: 100%; top: 0; left: 0; z-index: -11;"></div>
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #1a1a1a;">
     <div class="container">
-      <a class="navbar-brand" href="{% url 'core:home' %}">^_^ Saving Souls ^_^</a>
+      <a class="navbar-brand d-flex align-items-center" href="{% url 'core:home' %}">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#8a2be2" class="me-2">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+        <span>SavingSouls</span>
+      </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -20,41 +29,54 @@
         <!-- All links aligned right -->
         <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'core:home' %}">Home</a>
+            <a class="nav-link me-3 {% if request.path == '/' %}active fw-bold{% endif %}" href="{% url 'core:home' %}">
+              <i class="bi bi-house-heart me-1"></i>Home
+            </a>
+          </li>
+          {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link me-3 {% if request.path == '/stories/' %}active fw-bold{% endif %}" href="{% url 'core:stories' %}">
+              <i class="bi bi-postcard-heart me-1"></i>Stories
+            </a>
           </li>
           <li class="nav-item">
-            <a class="nav-link {% if request.path == '/stories/' %}active{% endif %}" href="{% url 'core:stories' %}">Stories</a>
+            <a class="nav-link me-3 {% if request.path == '/journals/' %}active fw-bold{% endif %}" href="{% url 'core:journals' %}">
+              <i class="bi bi-journal-text me-1"></i>Journals
+            </a>
           </li>
+          {% endif %}
           
-                  <!-- Place staff-only link here -->
+          <!-- Place staff-only link here -->
         {% if user.is_staff %}
         <li class="nav-item">
-          <a class="nav-link text-danger fw-bold" href="{% url 'core:distress_alerts' %}">🚨 Alerts</a>
+          <a class="nav-link nav-link-alert me-3 fw-bold" href="{% url 'core:distress_alerts' %}">
+            <i class="bi bi-exclamation-triangle-fill me-1"></i>Alerts
+          </a>
         </li>
       {% endif %}
 
       {% if user.is_authenticated %}
       <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-          {{ user.username }}
+        <a class="nav-link dropdown-toggle me-3" href="#" role="button" data-bs-toggle="dropdown">
+          <i class="bi bi-person-circle me-1"></i>{{ user.username }}
         </a>
         <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item" href="{% url 'core:my_stories' %}">My Stories</a></li>
-          <li><a class="dropdown-item" href="{% url 'core:edit_profile' %}">Edit Profile</a></li>
+          <li><a class="dropdown-item" href="{% url 'core:my_stories' %}"><i class="bi bi-journal-bookmark me-2"></i>My Stories</a></li>
+          <li><a class="dropdown-item" href="{% url 'core:edit_profile' %}"><i class="bi bi-gear me-2"></i>Edit Profile</a></li>
+          <li><hr class="dropdown-divider"></li>
           <li>
             <form method="post" action="{% url 'core:logout' %}" class="m-0 p-0">
               {% csrf_token %}
-              <button type="submit" class="dropdown-item text-danger" style="min-width: 100px;">Logout</button>
+              <button type="submit" class="dropdown-item text-danger"><i class="bi bi-box-arrow-right me-2"></i>Logout</button>
             </form>
           </li>
         </ul>
       </li>
           {% else %}
-            <li class="nav-item">
-              <a class="nav-link {% if request.path == '/login/' %}active{% endif %}" href="{% url 'core:login' %}">Login</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link {% if request.path == '/signup/' %}active{% endif %}" href="{% url 'core:signup' %}">Signup</a>
+            <li class="nav-item d-flex align-items-center">
+              <a class="btn text-white get-started-btn me-3" href="{% url 'core:login' %}" style="background: linear-gradient(90deg, #8a2be2, #ff69b4);">
+                <i class="bi bi-box-arrow-in-right me-1" style=""></i>Get Started
+              </a>
             </li>
           {% endif %}
         </ul>
@@ -70,39 +92,18 @@
     {% endif %}
     {% block content %}{% endblock %}
   </div>
-  <!-- 💬 Floating Chat Button -->
-  <a href="{% url 'core:chat_page' %}"
+  <!-- 💬 Floating Chat Button - Only visible for logged in users -->
+  {% if user.is_authenticated %}  <a href="{% url 'core:chat_page' %}" id="chat-button"
+
   class="btn btn-primary rounded-circle shadow-lg"
   style="position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; font-size: 24px; display: flex; align-items: center; justify-content: center; z-index: 9999;">
   💬
   </a>
+  {% endif %}
+  
+  <!-- JavaScript Dependencies -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
   <script src="{% static 'core/js/particles.js' %}"></script>
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
-      const elements = document.querySelectorAll('.card, .alert, .container'); // Removed .navbar
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.style.animation = 'fadeIn 1s forwards ease';
-            observer.unobserve(entry.target);
-          }
-        });
-      }, { threshold: 0.1 });
-  
-      elements.forEach(el => observer.observe(el));
-    });
-  
-    // Navbar scroll animation for stronger separation
-    window.addEventListener("scroll", () => {
-      const navbar = document.querySelector(".navbar");
-      if (window.scrollY > 10) {
-        navbar.classList.add("scrolled");
-      } else {
-        navbar.classList.remove("scrolled");
-      }
-    });
-  </script>
-</body>
-</html>
+  </body>
+  </html>

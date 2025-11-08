@@ -2,144 +2,186 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages
 from django.contrib.auth.models import User
-from .models import Post, Comment, Reaction, Category, Profile, Story, DistressAlert
-from .forms import PostForm, CommentForm, EditProfileForm, EditPasswordForm, SignUpForm, StoryForm
+from .models import Comment, Reaction, Category, Story, DistressAlert, Journal, Tag
+from .forms import  CommentForm, EditProfileForm, EditPasswordForm, SignUpForm, StoryForm, JournalForm
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.db.models import Count, Q, F, Sum
-from django.contrib.auth import update_session_auth_hash, login
+from django.contrib.auth import update_session_auth_hash, login, get_user_model
 from django.views.decorators.csrf import csrf_exempt
-from openai import OpenAI,OpenAIError
 import json
-import os, random
 # Import the analyze_sentiment function, generate_supportive_reply function
 from .utils.ai_utils import analyze_sentiment, generate_supportive_reply
 from django.core.mail import send_mail
 from django.contrib.admin.views.decorators import staff_member_required
-from .utils.emotion_utils import detect_emotion
 from django.utils.timezone import now
 from django.views.decorators.http import require_POST
 
-def home(request):
-    posts = Post.objects.all().order_by('-created_at')[:5]  # latest 5 posts
 
-    for post in posts:
+def home(request):
+    # Check if user has accepted the disclaimer
+    if request.user.is_authenticated:
+        profile = request.user.profile
+        if not profile.disclaimer_accepted:
+            return redirect('core:disclaimer')
+    elif not request.session.get('disclaimer_accepted', False):
+        return redirect('core:disclaimer')
+
+    # Check if this is the user's first visit
+    if not request.session.get('has_visited', False):
+        request.session['has_visited'] = True
+        show_welcome_modal = True
+    else:
+        show_welcome_modal = False
+
+    # Check if we need to show the disclaimer
+    show_disclaimer = request.session.pop('show_disclaimer', False)
+
+    stories = Story.objects.all().order_by('-created_at')[:5]  # latest 5 stories
+
+    for story in stories:
         # User's reactions
-        post.user_reactions = []
         if request.user.is_authenticated:
-            post.user_reactions = post.reactions.filter(user=request.user).values_list('reaction_type', flat=True)
+            story.user_reactions = story.reactions.filter(user=request.user).values_list('reaction_type', flat=True)
+        else:
+            story.user_reactions = []
 
         # Counts for all reactions
-        post.reaction_counts = {
-            'heart': post.reactions.filter(reaction_type='heart').count(),
-            'hug': post.reactions.filter(reaction_type='hug').count(),
-            'hands': post.reactions.filter(reaction_type='hands').count(),
+        story.reaction_counts = {
+            'heart': story.reactions.filter(reaction_type='heart').count(),
+            'hug': story.reactions.filter(reaction_type='hug').count(),
+            'hands': story.reactions.filter(reaction_type='hands').count(),
         }
 
-    return render(request, 'home.html', {'posts': posts})
+    return render(request, 'home.html', {
+        'stories': stories,
+        'show_welcome_modal': show_welcome_modal,
+        'show_disclaimer': show_disclaimer
+    })
 
 def signup(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Account created successfully! You can now log in.")
-            return redirect('login')
+            user = form.save()
+            login(request, user)  # Auto-login the user
+            return redirect('core:disclaimer')  # Redirect to disclaimer page
     else:
         form = SignUpForm()
     return render(request, 'signup.html', {'form': form})
 
 # def community(request):
-#     posts = Post.objects.all().order_by('-created_at')
-#     return render(request, 'community.html', {'posts': posts})
+
+
+def disclaimer(request):
+    # Allow access to disclaimer page without login
+    if request.user.is_authenticated:
+        profile = request.user.profile
+        if request.method == 'POST':
+            profile.disclaimer_accepted = True
+            profile.save()
+            return redirect('core:home')
+    else:
+        # For non-authenticated users, use session to track acceptance
+        if request.method == 'POST':
+            request.session['disclaimer_accepted'] = True
+            return redirect('core:home')
+    
+    return render(request, 'disclaimer.html')
+
+User = get_user_model()
 
 @login_required
-def all_stories(request):
-    if not (request.user.is_staff or request.user.is_superuser):
-        messages.error(request, "Access denied.")
-        return redirect('core:stories')
+def create_story(request):
+    categories_qs = Category.objects.all()
+    selected_categories = []
 
-    stories = Story.objects.select_related('user', 'category').order_by('-created_at')
-    return render(request, 'admin_view.html', {'stories': stories})
-
-
-@login_required
-def create_post(request):
     if request.method == 'POST':
-        content = request.POST.get("content")
-        category_id = request.POST.get("category")
-        author=request.user if not is_anonymous else None,
-        is_anonymous=is_anonymous,
+        # capture selected category ids (strings) so template can render checked state
+        selected_categories = request.POST.getlist('categories')
 
-        # 🧩 Handle missing content
-        if not content:
-            messages.error(request, "Story content cannot be empty.")
-            return redirect("core:create_post")
-
-        # ✅ Fetch category safely
-        category = None
-        if category_id:
-            try:
-                category = Category.objects.get(id=category_id)
-            except Category.DoesNotExist:
-                category = None
-
-        # ✅ Create Story instance
-        story = Story.objects.create(
-            user=request.user,
-            category=category,
-            content=content,
-            author=request.user if not is_anonymous else None,
-            is_anonymous=is_anonymous,
-        )
-
-        # 🧠 AI Sentiment Analysis
-        try:
-            analysis = analyze_sentiment(story.content)
-            story.sentiment = analysis.get("sentiment")
-            story.distress_level = analysis.get("distress_level")
+        form = StoryForm(request.POST)
+        if form.is_valid():
+            # save story instance (commit=False so we can set author)
+            story = form.save(commit=False)
+            story.author = request.user
             story.save()
-        except Exception as e:
-            print(f"⚠️ AI analysis error: {e}")
 
-        # 💬 Auto-support message for distress
-        if getattr(story, "distress_level", None) == "high":
+            # If the form contains M2M fields (like form.categories) use save_m2m()
             try:
-                supportive_text = generate_supportive_reply(story.content)
-                ai_user, _ = User.objects.get_or_create(username="AI_Support", defaults={"is_active": False})
-                Comment.objects.create(story=story, author=ai_user, content=supportive_text)
+                form.save_m2m()
+            except Exception:
+                # If categories were submitted as raw inputs (name="categories"), attach them manually
+                if selected_categories:
+                    try:
+                        # convert to ints and fetch category objects
+                        cat_ids = [int(cid) for cid in selected_categories if cid]
+                        cats = Category.objects.filter(id__in=cat_ids)
+                        # assumes Story model has a ManyToManyField called categories
+                        story.categories.set(cats)
+                    except Exception as e:
+                        # non-fatal, log and continue
+                        print(f"⚠ Could not attach categories: {e}")
 
-                # 📧 Notify admins
-                admins = User.objects.filter(is_superuser=True).values_list("email", flat=True)
-                subject = f"🚨 Distress Alert: {request.user.username} may need help"
-                message = (
-                    f"A new story by {request.user.username} shows signs of high distress.\n\n"
-                    f"Story content:\n\"{story.content}\"\n\n"
-                    f"Auto Supportive Reply:\n\"{supportive_text}\"\n\n"
-                    "Please review it in the admin panel or reach out if needed."
-                )
-                send_mail(subject, message, "Saving_Souls <noreply@savingsouls.com>", admins)
-                print("📧 Email alert sent to admins!")
-
+            # 🧠 AI Sentiment Analysis (same as your original logic)
+            try:
+                analysis = analyze_sentiment(story.content)
+                sentiment = analysis.get("sentiment")
+                distress_level = analysis.get("distress_level")
+                print(f"Story analysis - Sentiment: {sentiment}, Distress Level: {distress_level}")
             except Exception as e:
-                print(f"⚠️ AI Support or email error: {e}")
+                print(f"⚠ AI analysis error: {e}")
+                sentiment = None
+                distress_level = None
 
-        messages.success(request, "Your story has been posted successfully!")
-        return redirect('core:my_stories')
+            # 💬 Auto-support message for distress
+            if distress_level == "high":
+                try:
+                    supportive_text = generate_supportive_reply(story.content)
+                    ai_user, _ = User.objects.get_or_create(username="AI_Support", defaults={"is_active": False})
+                    Comment.objects.create(story=story, author=ai_user, content=supportive_text)
 
-    # GET request → render form
-    categories = Category.objects.all()
-    return render(request, 'create_post.html', {'categories': categories})
+                    # 📧 Notify admins
+                    admins = User.objects.filter(is_superuser=True).values_list("email", flat=True)
+                    subject = f"🚨 Distress Alert: {request.user.username} may need help"
+                    message = (
+                        f"A new story by {request.user.username} shows signs of high distress.\n\n"
+                        f"Story content:\n\"{story.content}\"\n\n"
+                        f"Auto Supportive Reply:\n\"{supportive_text}\"\n\n"
+                        "Please review it in the admin panel or reach out if needed."
+                    )
+                    send_mail(subject, message, "Saving_Souls <noreply@savingsouls.com>", list(admins))
+                    print("📧 Email alert sent to admins!")
+                except Exception as e:
+                    print(f"⚠ AI Support or email error: {e}")
 
-def post_detail(request, post_id):
-    post = get_object_or_404(Post, id=post_id)
-    comments = post.comments.all().order_by('-created_at')
+            messages.success(request, "Your story has been posted successfully!")
+            return redirect('core:my_stories')
+
+        else:
+            # If form invalid, fall through to re-render template with the form (errors will show)
+            print("Form invalid:", form.errors)
+
+    else:
+        form = StoryForm()
+
+    # Provide categories and selected_categories for template rendering
+    context = {
+        'form': form,
+        'categories': categories_qs,
+        'selected_categories': selected_categories,
+    }
+    return render(request, 'create_story.html', context)
+    
+def story_detail(request, story_id):
+    story = get_object_or_404(Story, id=story_id)
+    comments = story.comments.all().order_by('-created_at')
 
     # Determine which reactions the current user has already made
     user_reactions = []
     if request.user.is_authenticated:
-        user_reactions = post.reactions.filter(user=request.user).values_list('reaction_type', flat=True)
+        user_reactions = story.reactions.filter(user=request.user).values_list('reaction_type', flat=True)
 
     if request.method == 'POST':
         if not request.user.is_authenticated:
@@ -147,73 +189,80 @@ def post_detail(request, post_id):
         form = CommentForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
-            comment.post = post
+            comment.story = story
             comment.author = request.user
             comment.save()
-            return redirect('core:post_detail', post_id=post.id)
+            return redirect('core:story_detail', story_id=story.id)
     else:
         form = CommentForm()
 
-    return render(request, 'post_detail.html', {
-        'post': post,
+    return render(request, 'story_detail.html', {
+        'story': story,
         'comments': comments,
         'form': form,
         'user_reactions': user_reactions
     })
 
 def stories(request):
-    search_query = request.GET.get('q', '')
-    category_id = request.GET.get('category', '')
+    search_query = request.GET.get("q", "")
+    category_id = request.GET.get("category", "")
 
-    posts_list = Post.objects.all().order_by('-created_at')
+    # ✅ Use Story model instead of Post
+    stories_list = Story.objects.all().order_by("-created_at")
 
     if search_query:
-        posts_list = posts_list.filter(content__icontains=search_query)
+        stories_list = stories_list.filter(content__icontains=search_query)
 
     if category_id:
-        posts_list = posts_list.filter(categories__id=category_id)
+        stories_list = stories_list.filter(category_id=category_id)
 
-    # Add reaction counts and user reactions
-    for post in posts_list:
-        post.reaction_counts = {
-            'heart': post.reactions.filter(reaction_type='heart').count(),
-            'hug': post.reactions.filter(reaction_type='hug').count(),
-            'hands': post.reactions.filter(reaction_type='hands').count(),
+    # 🧠 Add reaction counts and user reactions
+    for story in stories_list:
+        story.reaction_counts = {
+            "heart": story.reactions.filter(reaction_type="heart").count(),
+            "hug": story.reactions.filter(reaction_type="hug").count(),
+            "hands": story.reactions.filter(reaction_type="hands").count(),
         }
-        post.user_reactions = []
+        story.user_reactions = []
         if request.user.is_authenticated:
-            post.user_reactions = post.reactions.filter(user=request.user).values_list('reaction_type', flat=True)
-        post.total_reactions = sum(post.reaction_counts.values())
+            story.user_reactions = story.reactions.filter(user=request.user).values_list(
+                "reaction_type", flat=True
+            )
+        story.total_reactions = sum(story.reaction_counts.values())
 
-    # Top reacted posts
-    top_posts = sorted(posts_list, key=lambda x: x.total_reactions, reverse=True)[:3]
+    # 🔥 Top reacted stories
+    top_stories = sorted(stories_list, key=lambda x: x.total_reactions, reverse=True)[:3]
 
-    # Pagination
-    from django.core.paginator import Paginator
-    paginator = Paginator(posts_list, 5)
-    page_number = request.GET.get('page')
-    posts = paginator.get_page(page_number)
+    # 📄 Pagination
+    paginator = Paginator(stories_list, 5)
+    page_number = request.GET.get("page")
+    stories = paginator.get_page(page_number)
 
     categories = Category.objects.all()
 
-    return render(request, 'stories.html', {
-        'posts': posts,
-        'top_posts': top_posts,
-        'search_query': search_query,
-        'categories': categories,
-        'selected_category': category_id
-    })
+    return render(
+        request,
+        "stories.html",
+        {
+            "stories": stories,
+            "top_stories": top_stories,
+            "search_query": search_query,
+            "categories": categories,
+            "selected_category": category_id,
+        },
+    )
+
 
 @login_required
-def react_to_post(request, post_id, reaction_type):
+def react_to_story(request, story_id, reaction_type):
     if not request.user.is_authenticated:
-        return JsonResponse({'error': 'Login required'}, status=403)
+        return JsonResponse({"error": "Login required"}, status=403)
 
-    post = get_object_or_404(Post, id=post_id)
-    reaction, created = Reaction.objects.get_or_create(user=request.user, post=post)
+    story = get_object_or_404(Story, id=story_id)
+    reaction, created = Reaction.objects.get_or_create(user=request.user, story=story)
 
     # Toggle reaction
-    if reaction.reaction_type == reaction_type:
+    if not created and reaction.reaction_type == reaction_type:
         reaction.delete()
         reacted = None
     else:
@@ -223,12 +272,13 @@ def react_to_post(request, post_id, reaction_type):
 
     # Return updated counts
     counts = {
-        'heart': post.reactions.filter(reaction_type='heart').count(),
-        'hug': post.reactions.filter(reaction_type='hug').count(),
-        'hands': post.reactions.filter(reaction_type='hands').count(),
+        "heart": story.reactions.filter(reaction_type="heart").count(),
+        "hug": story.reactions.filter(reaction_type="hug").count(),
+        "hands": story.reactions.filter(reaction_type="hands").count(),
     }
 
-    return JsonResponse({'reactions_count': counts, 'reacted': reacted})
+    return JsonResponse({"reactions_count": counts, "reacted": reacted})
+
 
 @login_required
 def edit_profile(request):
@@ -257,45 +307,113 @@ def edit_profile(request):
 
 @login_required
 def my_stories(request):
-    stories = Story.objects.filter(user=request.user)
+    stories = Story.objects.filter(author=request.user)
     return render(request, "my_stories.html", {"stories": stories})
 
 @login_required
-def edit_post(request, post_id):
-    story = get_object_or_404(Story, id=post_id, user=request.user)  # remove user filter for now
+def edit_story(request, pk):
+    """
+    Edit an existing story. Only the author or a superuser may edit.
+    Preserves category chip selections via selected_categories.
+    Re-runs sentiment analysis on save and triggers the same 'high distress'
+    flow as create_story (AI reply + admin email).
+    """
+    story = get_object_or_404(Story, pk=pk)
+
+    # Permission: allow only author or superusers
+    if request.user != story.author and not request.user.is_superuser:
+        return HttpResponseForbidden("You don't have permission to edit this story.")
+
+    categories_qs = Category.objects.all()
+    selected_categories = []
 
     if request.method == 'POST':
+        # capture category selections (strings)
+        selected_categories = request.POST.getlist('categories')
         form = StoryForm(request.POST, instance=story)
+
         if form.is_valid():
             story = form.save(commit=False)
-            if story.user is None:  # auto-fix missing user
-                story.user = request.user
+            # keep the original author
+            story.author = story.author
             story.save()
-            return redirect('core:my_stories')
-    else:
-        form = StoryForm(instance=story)
 
-    return render(request, 'edit_post.html', {'form': form})
+            # try to save M2M fields from form; fallback to manual attach
+            try:
+                form.save_m2m()
+            except Exception:
+                if selected_categories:
+                    try:
+                        cat_ids = [int(cid) for cid in selected_categories if cid]
+                        cats = Category.objects.filter(id__in=cat_ids)
+                        story.categories.set(cats)
+                    except Exception as e:
+                        print(f"⚠ Could not attach categories on edit: {e}")
+
+            # Re-run AI sentiment analysis (optional but consistent with create)
+            try:
+                analysis = analyze_sentiment(story.content)
+                sentiment = analysis.get("sentiment")
+                distress_level = analysis.get("distress_level")
+                print(f"[edit] Story analysis - Sentiment: {sentiment}, Distress Level: {distress_level}")
+            except Exception as e:
+                print(f"⚠ AI analysis error on edit: {e}")
+                sentiment = None
+                distress_level = None
+
+            # If distress high, create supportive reply and notify admins
+            if distress_level == "high":
+                try:
+                    supportive_text = generate_supportive_reply(story.content)
+                    ai_user, _ = User.objects.get_or_create(
+                        username="AI_Support",
+                        defaults={"is_active": False}
+                    )
+                    Comment.objects.create(story=story, author=ai_user, content=supportive_text)
+
+                    admins = User.objects.filter(is_superuser=True).values_list("email", flat=True)
+                    subject = f"🚨 Distress Alert (edited): {story.author.username} may need help"
+                    message = (
+                        f"A story edited by {story.author.username} shows signs of high distress.\n\n"
+                        f"Story content:\n\"{story.content}\"\n\n"
+                        f"Auto Supportive Reply:\n\"{supportive_text}\"\n\n"
+                        "Please review it in the admin panel or reach out if needed."
+                    )
+                    send_mail(subject, message, "Saving_Souls <noreply@savingsouls.com>", list(admins))
+                    print("📧 Email alert sent to admins (edit)!")
+                except Exception as e:
+                    print(f"⚠ AI Support or email error on edit: {e}")
+
+            messages.success(request, "Your story has been updated.")
+            return redirect('core:my_stories')
+        else:
+            print("Form invalid on edit:", form.errors)
+
+    else:
+        # Prefill the form with instance data
+        form = StoryForm(instance=story)
+        # For initial checked chips, use story.categories if present
+        try:
+            selected_categories = [str(c.id) for c in story.categories.all()]
+        except Exception:
+            selected_categories = []
+
+    context = {
+        'form': form,
+        'categories': categories_qs,
+        'selected_categories': selected_categories,
+        'story': story,
+    }
+    return render(request, 'create_story.html', context)  # reuse create template or use edit template
 
 @login_required
-def delete_post(request, story_id):
-    story = get_object_or_404(Story, id=story_id)
-
-    # ✅ Allow deletion only if the user is the owner or an admin
-    if request.user == story.user or request.user.is_staff or request.user.is_superuser:
-        if request.method == 'POST':
-            story.delete()
-            messages.success(request, "Story deleted successfully.")
-            # Redirect appropriately based on user type
-            if request.user.is_staff or request.user.is_superuser:
-                return redirect('core:stories')  # Admins see all stories
-            else:
-                return redirect('core:my_stories')
-    else:
-        messages.error(request, "You do not have permission to delete this story.")
-        return redirect('core:stories')
-
-    return redirect('core:stories')
+def delete_story(request, story_id):
+    story = get_object_or_404(Story, id=story_id, author=request.user)
+    if request.method == 'POST':
+        story.delete()
+        messages.success(request, 'Your story has been deleted.')
+        return redirect('core:my_stories')
+    return render(request, 'delete_story.html', {'story': story})
 
 # 🩵 Mock fallback responses
 MOCK_RESPONSES = [
@@ -332,7 +450,7 @@ def chat_page(request):
 #         # 💬 Step 3: Generate supportive reply
 #         try:
 #             base_reply = generate_supportive_reply(user_message)
-#         except OpenAIError as e:
+#         except Exception as e:
 #             print(f"❌ AI Supportive Reply Error: {e}")
 #             base_reply = None
 
@@ -371,7 +489,7 @@ def chat_page(request):
 #         })
 
 #     return JsonResponse({"error": "Invalid request"}, status=400)
-
+@login_required
 @csrf_exempt
 @require_POST
 def ask_ai(request):
@@ -426,3 +544,51 @@ def delete_alert(request, alert_id):
     if request.method == "POST":
         alert.delete()
     return redirect("core:distress_alerts")
+
+@login_required
+def journals(request):
+    qs = Journal.objects.filter(author=request.user).order_by('-created_at')
+    paginator = Paginator(qs, 8)
+    page = request.GET.get('page')
+    journals_page = paginator.get_page(page)
+    return render(request, 'journals.html', {'journals': journals_page})
+
+@login_required
+def create_journal(request):
+    if request.method == 'POST':
+        form = JournalForm(request.POST)
+        if form.is_valid():
+            form.save(commit=True, author=request.user)
+            messages.success(request, 'Journal entry saved.')
+            return redirect('core:journals')
+    else:
+        form = JournalForm()
+    return render(request, 'create_journal.html', {'form': form})
+
+@login_required
+def journal_detail(request, journal_id):
+    journal = get_object_or_404(Journal, id=journal_id, author=request.user)
+    return render(request, 'journal_detail.html', {'journal': journal})
+
+@login_required
+def edit_journal(request, journal_id):
+    journal = get_object_or_404(Journal, id=journal_id, author=request.user)
+    if request.method == 'POST':
+        form = JournalForm(request.POST, instance=journal)
+        if form.is_valid():
+            form.save(commit=True, author=request.user)
+            messages.success(request, 'Journal entry updated.')
+            return redirect('core:journal_detail', journal_id=journal.id)
+    else:
+        form = JournalForm(instance=journal)
+    return render(request, 'create_journal.html', {'form': form, 'is_edit': True})
+
+@login_required
+def delete_journal(request, journal_id):
+    journal = get_object_or_404(Journal, id=journal_id, author=request.user)
+    if request.method == 'POST':
+        journal.delete()
+        messages.success(request, 'Journal entry deleted.')
+        return redirect('core:journals')
+    # optional: confirm page or just redirect back
+    return redirect('core:journal_detail', journal_id=journal.id)

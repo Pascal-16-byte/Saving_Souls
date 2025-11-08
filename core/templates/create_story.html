@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Share Your Story - SavingSouls{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'core/css/base.css' %}">
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <!-- 🪶 Story Card -->
+      <div class="card shadow-lg p-4 border-0 story-form-card" style="background: rgba(255,255,255,0.05); border-radius: 20px; backdrop-filter: blur(10px);">
+        <div class="card-body">
+          <h2 class="fw-bold text-center mb-4" style="color: #fff;">
+            💬 Share Your Story
+          </h2>
+          <p class="text-center text-white mb-4" style="color: #ccc;">
+            Express your thoughts, feelings, or experiences. You can choose to post anonymously if you prefer.  
+            Your story might help someone else feel less alone.
+          </p>
+
+          <!-- Story Form -->
+          <form method="POST" novalidate>
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+
+            <!-- Story Content -->
+            <div class="mb-4">
+              <label for="{{ form.content.id_for_label }}" class="form-label text-white fw-semibold">
+                Your Story
+              </label>
+              {{ form.content }}
+              {% for error in form.content.errors %}
+                <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <!-- Categories -->
+            <div class="mb-4">
+              <label class="form-label text-white fw-semibold">
+                Related Topics
+              </label>
+              <div class="form-check-list">
+                {% for checkbox in form.categories %}
+                  <div class="form-check form-check-inline text-light mb-2">
+                    {{ checkbox.tag }}
+                    <label class="form-check-label ms-1" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                  </div>
+                {% empty %}
+                  <p class="text-muted small">No categories available yet.</p>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Anonymous Option -->
+            <div class="form-check mb-4">
+              {{ form.anonymous }}
+              <label for="{{ form.anonymous.id_for_label }}" class="form-check-label text-light ms-1">
+                Post Anonymously
+              </label>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="text-center mt-4">
+              <button type="submit" class="btn btn-lg px-5 text-white fw-semibold"
+                style="background: linear-gradient(90deg, #8a2be2, #ff69b4); border: none; border-radius: 30px; transition: all 0.3s ease;">
+                Share Story
+              </button>
+               <a href="{% url 'core:stories' %}" class="btn btn-outline-light">Cancel</a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Encouragement footer -->
+      <div class="text-center mt-4 text-light-50">
+        <small>
+          🌱 Every story matters. Sharing can lighten your heart and inspire others to heal.
+        </small>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Extra glow and input styling for create story page */
+  textarea.form-control {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+  }
+
+  textarea.form-control:focus {
+    background: rgba(255,255,255,0.15);
+    border-color: #8a2be2;
+    box-shadow: 0 0 10px rgba(138,43,226,0.4);
+  }
+
+  .form-check-input:checked {
+    background-color: #8a2be2;
+    border-color: #8a2be2;
+  }
+
+  .form-check-input:focus {
+    box-shadow: 0 0 6px rgba(138,43,226,0.6);
+  }
+
+  .story-form-card:hover {
+    transform: translateY(-4px);
+    transition: all 0.4s ease;
+    box-shadow: 0 10px 35px rgba(138,43,226,0.25);
+  }
+
+  label.form-label {
+    font-size: 1rem;
+    letter-spacing: 0.3px;
+  }
+</style>
+
+{% endblock %}

@@ -3,10 +3,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     buttons.forEach(button => {
         button.addEventListener('click', () => {
-            const postId = button.dataset.postId;
+            const storyId = button.dataset.storyId;
             const reactionType = button.dataset.reaction;
 
-            fetch(`/stories/${postId}/react/${reactionType}/`)
+            fetch(`/stories/${storyId}/react/${reactionType}/`)
                 .then(response => response.json())
                 .then(data => {
                     const parent = button.parentElement;

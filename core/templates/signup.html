@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
-{% block title %}Sign Up - Saving Souls{% endblock %}
 {% load static %}
+{% block title %}Sign Up - Saving Souls{% endblock %}
 
 {% block content %}
 <link rel="stylesheet" href="{% static 'core/css/signup.css' %}">
 
 <div class="signup-container">
   <div class="signup-card shadow-lg">
-    <h2 class="text-center mb-4">Join <span class="highlight">Saving Souls</span></h2>
+    <h2 class="text-center mb-4">Join <span class="highlight">Saving Souls</span> 💫</h2>
     <p class="text-center text-muted mb-4">You're not alone — share your journey and find support 💖</p>
 
     <form method="post" class="signup-form">
@@ -47,7 +47,8 @@
       <button type="submit" class="btn btn-success w-100">Register</button>
     </form>
 
-    <p class="text-center mt-3">Already have an account?
+    <p class="text-center mt-3" style="color: black;">
+      Already have an account?
       <a href="{% url 'core:login' %}" class="login-link">Login here</a>.
     </p>
   </div>

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Disclaimer - SavingSouls{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="card shadow-lg p-4" style="background-color: #1e1e1e; border: 1px solid #333; border-radius: 20px;">
+    <h2 class="text-center mb-4" style="color: #ff69b4;">Disclaimer</h2>
+
+    <p class="mb-3">
+      Welcome to <strong>SavingSouls</strong>. By using our platform, you acknowledge and agree to the following terms and disclaimers. This page outlines the limits of responsibility, data use, and user conduct within the system.
+    </p>
+
+    <h4 class="mt-4" style="color: #8a2be2;">1. General Disclaimer</h4>
+    <p>
+      SavingSouls is designed to assist with awareness and coordination in emergency or distress-related situations. The platform does not replace professional medical, legal, or emergency response services. Always contact official authorities for immediate assistance.
+    </p>
+
+    <h4 class="mt-4" style="color: #8a2be2;">2. Accuracy of Information</h4>
+    <p>
+      While we strive to maintain accuracy, the information provided by users or other contributors may not always be verified. We are not responsible for any errors, omissions, or outcomes resulting from reliance on such data.
+    </p>
+
+    <h4 class="mt-4" style="color: #8a2be2;">3. Data Privacy</h4>
+    <p>
+      We respect your privacy. Personal and sensitive data shared through the platform are handled according to our Privacy Policy. However, users should avoid sharing unnecessary personal details that could compromise their safety.
+    </p>
+
+    <h4 class="mt-4" style="color: #8a2be2;">4. Liability</h4>
+    <p>
+      SavingSouls and its developers are not liable for any direct, indirect, or incidental damages that may arise from using the platform or relying on information available here.
+    </p>
+
+    <h4 class="mt-4" style="color: #8a2be2;">5. External Links</h4>
+    <p>
+      Our platform may include links to external websites or services. We are not responsible for the content, security, or privacy practices of these third-party resources.
+    </p>
+
+    <h4 class="mt-4" style="color: #8a2be2;">6. User Responsibility</h4>
+    <p>
+      Users are expected to interact respectfully, avoid misinformation, and comply with community guidelines. Misuse of the platform may result in suspension or legal action where applicable.
+    </p>
+
+    <h4 class="mt-4" style="color: #8a2be2;">7. Updates to Disclaimer</h4>
+    <p>
+      This disclaimer may be updated periodically. Continued use of the platform indicates your acceptance of the latest version.
+    </p>
+  </div>
+<form method="post" class="text-center mt-4">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-lg text-white" 
+          style="background: linear-gradient(90deg, #8a2be2, #ff69b4); border: none; border-radius: 25px; padding: 10px 25px;">
+    <i class="bi bi-check-circle me-2"></i>I Understand & Accept
+  </button>
+</form>
+</div>
+{% endblock %}

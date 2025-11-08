@@ -1,33 +1,63 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}AI Support Chat{% endblock %}
+
+{% block title %}AI Support Chat - SavingSouls{% endblock %}
+
+{% block additional_head %}
+<link rel="stylesheet" href="{% static 'core/css/chatbot.css' %}?v=2">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+{% endblock %}
+
 {% block content %}
-<link rel="stylesheet" href="{% static 'core/css/chatbot.css' %}">
+<section class="chat-page-section" aria-labelledby="chat-heading">
+  <div class="container">
+    <div class="chat-panel-wrapper">
+      <div class="chat-panel" role="application" aria-labelledby="chat-heading">
+        <!-- Header -->
+        <header class="chat-header">
+          <h2 id="chat-heading">AI Supportive Chat <span class="robot">🤖</span></h2>
+          <div class="header-note">A gentle, judgment-free space — tell me how you're feeling.</div>
+        </header>
 
-<div class="chat-container d-flex justify-content-center align-items-center">
-  <div class="card shadow-sm chat-card w-100" style="max-width: 520px;">
-    <div class="card-header bg-primary text-white text-center fs-4 rounded-top">
-      AI Supportive Chat 🤖💬
-    </div>
+        <!-- Chat body (messages inserted here) -->
+        <main id="chat-box" class="chat-body" aria-live="polite" aria-atomic="false">
+          <!-- If chatbot.js fails, we still show a fallback welcome message element
+               but this markup will be replaced / augmented by the JS when it runs. -->
+          <div class="message-group" data-role="ai">
+            <div class="msg-avatar">🤖</div>
+            <div class="bubble ai-bubble">
+              <div class="welcome-title">👋 Welcome!</div>
+              <div class="welcome-body">Hello — I'm your AI companion here to listen and support you. How are you feeling today?</div>
+            </div>
+            <div class="msg-meta">—</div>
+          </div>
+        </main>
 
-    <div id="chat-box" class="card-body">
-      <div id="messages"></div>
-    </div>
+        <!-- Footer / Input -->
+        <footer class="chat-footer">
+          <form id="chat-form" class="d-flex align-items-center w-100" autocomplete="off">
+            <label for="user-input" class="visually-hidden">Message</label>
+            <input
+              id="user-input"
+              name="message"
+              type="text"
+              autocomplete="off"
+              placeholder="Type something like ‘I’ve been feeling stressed lately…’"
+              class="form-control"
+              required
+              aria-label="Type your message"
+            />
+            <button type="submit" class="btn send-btn" aria-label="Send message">Send</button>
+          </form>
+        </footer>
+      </div>
 
-    <div class="card-footer bg-white">
-      <form id="chat-form" class="d-flex">
-        <input
-          type="text"
-          id="user-input"
-          class="form-control me-2"
-          placeholder="Type something like ‘I’ve been feeling stressed lately...’"
-          required
-        />
-        <button type="submit" class="btn btn-primary px-4">Send</button>
-      </form>
+      <!-- new message hint (hidden by default) -->
+      <div id="new-message-hint" role="button" aria-hidden="true" title="Jump to latest message">New messages</div>
     </div>
   </div>
-</div>
+</section>
 
+<!-- Load the chatbot JS after the DOM; make sure only one chatbot.js exists -->
 <script src="{% static 'core/js/chatbot.js' %}"></script>
 {% endblock %}

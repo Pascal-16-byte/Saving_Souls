@@ -1,52 +1,175 @@
 {% extends 'base.html' %}
 {% load static %}
-{% block title %}Home{% endblock %}
+
+{% block title %}Saving Souls - Your Mental Health Companion{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'core/css/home.css' %}">
+{% endblock %}
 
 {% block content %}
+<!-- Hero Section -->
 <div class="container mt-5">
-
-    <!-- Catchy line -->
-    <div class="text-center mb-4">
-        <h3 class="fw-bold">You are not alone – read real stories, share your support, and spread hope!💫</h3>
-        <p class="text-muted">Discover inspiring stories from people just like you. Every story matters✨.</p>
-    </div>
-
-    <h2 class="mb-4">Latest Stories</h2>
-
-    {% for post in posts %}
-    <div class="card mb-3 shadow-sm">
-        <div class="card-body">
-            <p>{{ post.content|truncatechars:100 }}</p>
-            <p class="text-muted small mb-2">
-                by {{ post.display_author }} on {{ post.created_at|date:"M d, Y H:i" }}
-            </p>
-
-            <!-- Dynamic Reactions -->
-            {% if user.is_authenticated %}
-            <div class="d-flex gap-2 mt-2">
-                <button class="btn btn-outline-danger btn-sm react-btn {% if 'heart' in post.user_reactions %}active btn-danger{% endif %}" data-post-id="{{ post.id }}" data-reaction="heart">
-                    ❤️ <span class="reaction-count">{{ post.reaction_counts.heart }}</span>
-                </button>
-                <button class="btn btn-outline-warning btn-sm react-btn {% if 'hug' in post.user_reactions %}active btn-warning{% endif %}" data-post-id="{{ post.id }}" data-reaction="hug">
-                    🤗 <span class="reaction-count">{{ post.reaction_counts.hug }}</span>
-                </button>
-                <button class="btn btn-outline-primary btn-sm react-btn {% if 'hands' in post.user_reactions %}active btn-primary{% endif %}" data-post-id="{{ post.id }}" data-reaction="hands">
-                    🙌 <span class="reaction-count">{{ post.reaction_counts.hands }}</span>
-                </button>
+    <div class="row align-items-center">
+        <div class="col-lg-6">
+            <h1 class="display-4 fw-bold mb-4">Your Mental Health Companion</h1>
+            <p class="lead mb-4">A safe, compassionate space powered by AI to support your emotional well-being. Chat with an empathetic AI companion, practice therapeutic journaling techniques, and take the first step toward better mental health.</p>
+            <div class="d-flex gap-3">
+                {% if user.is_authenticated %}
+                <a href="{% url 'core:chat_page' %}" class="btn btn-lg btn-outline-light" style="border-radius: 25px; padding: 10px 30px;">Chat Now</a>
+                {% else %}
+                <a href="{% url 'core:login' %}" class="btn btn-lg text-white" style="background: linear-gradient(90deg, #8a2be2, #ff69b4); border: none; border-radius: 25px; padding: 10px 30px;">Get Started</a>
+                {% endif %}
             </div>
-            {% else %}
-            <p class="mt-2"><a href="{% url 'core:login' %}" class="btn btn-primary btn-sm">Login to React</a></p>
-            {% endif %}
-
-            <!-- Read More -->
-            <a href="{% url 'core:post_detail' post.id %}" class="btn btn-secondary btn-sm mt-2 btn-success">Read More</a>
+        </div>
+        <div class="col-lg-6 mt-5 mt-lg-0">
+            <img src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" alt="Therapy session" class="img-fluid rounded-3 shadow-lg" style="max-height: 400px; object-fit: cover;">
         </div>
     </div>
-    {% empty %}
-    <p>No stories yet. Be the first to share your story!</p>
-    {% endfor %}
 </div>
 
-<!-- AJAX Script -->
-<script src="{% static 'core/js/react.js' %}"></script>
+<!-- How We Support You Section -->
+<div class="container mt-5 pt-5">
+    <h2 class="text-center mb-4">How We Support You</h2>
+    <p class="text-center mb-5">Combining empathetic AI with human care</p>
+    
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-dark text-white">
+                <div class="card-body text-center p-4">
+                    <div class="mb-4" style="color: #8a2be2; font-size: 2.5rem;">💬</div>
+                    <h5 class="card-title">Empathetic Conversations</h5>
+                    <p class="card-text">Our AI chatbot uses advanced NLP to understand your emotions and respond with genuine empathy and support.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-dark text-white">
+                <div class="card-body text-center p-4">
+                    <div class="mb-4" style="color: #4169e1; font-size: 2.5rem;">🛡️</div>
+                    <h5 class="card-title">Distress Detection</h5>
+                    <p class="card-text">Real-time sentiment analysis identifies when you need immediate help, triggering alerts to trained professionals.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 bg-dark text-white">
+                <div class="card-body text-center p-4">
+                    <div class="mb-4" style="color: #ff69b4; font-size: 2.5rem;">👥</div>
+                    <h5 class="card-title">Secure & Private</h5>
+                    <p class="card-text">Express yourself freely in a stigma-free environment. Your data is secure and distress alerts are handled by trained professionals.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Community Stories Section -->
+<div class="container mt-5 pt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0">Community Stories</h2>
+            <p class="text-muted mb-0">Read and share stories of hope and recovery</p>
+        </div>
+        {% if user.is_authenticated %}
+            <a href="{% url 'core:create_story' %}" class="btn btn-success">Share Your Story</a>
+        {% else %}
+            <a href="{% url 'core:login' %}" class="btn btn-primary">Login to Share</a>
+        {% endif %}
+    </div>
+
+    <div>
+        {% for story in stories %}
+            <div class="card mb-3 shadow-sm bg-dark text-white border-secondary">
+                <div class="card-body">
+                    <p class="card-text">{{ story.content|truncatechars:280 }}</p>
+                    <p class="text-muted small">
+                        Posted by <strong>{{ story.display_author }}</strong> on {{ story.created_at|date:"M d, Y" }}
+                    </p>
+
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div class="d-flex align-items-center gap-3">
+                            {% if user.is_authenticated %}
+                                <div class="d-flex gap-2">
+                                    <button class="btn btn-outline-danger btn-sm react-btn {% if 'heart' in story.user_reactions %}active btn-danger text-white{% endif %}" data-story-id="{{ story.id }}" data-reaction-type="heart">
+                                        ❤️ <span class="reaction-count">{{ story.reaction_counts.heart|default:0 }}</span>
+                                    </button>
+                                    <button class="btn btn-outline-warning btn-sm react-btn {% if 'hug' in story.user_reactions %}active btn-warning text-white{% endif %}" data-story-id="{{ story.id }}" data-reaction-type="hug">
+                                        🤗 <span class="reaction-count">{{ story.reaction_counts.hug|default:0 }}</span>
+                                    </button>
+                                    <button class="btn btn-outline-primary btn-sm react-btn {% if 'hands' in story.user_reactions %}active btn-primary text-white{% endif %}" data-story-id="{{ story.id }}" data-reaction-type="hands">
+                                        🙌 <span class="reaction-count">{{ story.reaction_counts.hands|default:0 }}</span>
+                                    </button>
+                                </div>
+                                <a href="{% url 'core:story_detail' story.id %}" class="btn btn-sm btn-outline-light">Read More</a>
+                            {% else %}
+                                <a href="{% url 'core:login' %}" class="btn btn-primary btn-sm">Login to React or Read More</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="text-center p-5 bg-dark rounded-3">
+                <p>No stories yet. Be the first to share yours!</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Crisis Resources Section -->
+<div class="container mt-5 pt-5">
+    <div class="card border-0 bg-dark text-white p-4 rounded-4">
+        <div class="card-body">
+            <h3 class="card-title text-danger mb-4">In Crisis? You're Not Alone</h3>
+            <p class="card-text mb-4">If you're experiencing a mental health emergency, please reach out to these resources immediately:</p>
+            
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="p-4 bg-danger bg-opacity-10 rounded-3">
+                        <h5 class="mb-3">🇺🇸 National Suicide Prevention Lifeline</h5>
+                        <h2 class="mb-2">988</h2>
+                        <p class="text-muted">Available 24/7</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="p-4 bg-danger bg-opacity-10 rounded-3">
+                        <h5 class="mb-3">📱 Crisis Text Line</h5>
+                        <h2 class="mb-2">Text "HELLO" to 741741</h2>
+                        <p class="text-muted">Available 24/7</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Footer -->
+<footer class="mt-5 pt-5 pb-4" style="background-color: #1a1a1a;">
+  <div class="container">
+    <div class="row">
+      <div class="col-md-4 mb-4">
+        <div class="d-flex align-items-center mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#8a2be2" class="me-2">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          <span style="background: linear-gradient(90deg, #8a2be2, #ff69b4); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">SavingSouls</span>
+        </div>
+        <p class="text-muted" style="color: white !important;">Supporting mental health through compassionate AI technology</p>
+      </div>
+      <div class="col-md-4 mb-4">
+        <h5 class="mb-3">About This Platform</h5>
+        <p class="text-muted" style="color: white !important;">This is a prototype demonstration of an AI-powered mental health support platform. For professional help, please consult licensed mental health professionals.</p>
+      </div>
+      <div class="col-md-4 mb-4">
+        <h5 class="mb-3">Privacy & Safety</h5>
+        <p class="text-muted" style="color: white !important;">Your privacy is important. All conversations are processed with care, and distress alerts are handled by trained professionals.</p>
+      </div>
+    </div>
+    <div class="text-center mt-4">
+      <p class="text-muted small" style="color: white !important;">© 2025 SavingSouls. Prototype for educational purposes.</p>
+    </div>
+  </div>
+</footer>
 {% endblock %}

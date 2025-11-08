@@ -6,8 +6,7 @@ class CoreConfig(AppConfig):
     name = 'core'
 
     def ready(self):
-            from .models import Category
-            from . import signals
-            default_categories = ["Anxiety", "Depression", "Stress", "Loneliness", "Burnout", "Grief"]
-            for name in default_categories:
-                        Category.objects.get_or_create(name=name)
+        from . import signals
+        # Import signals to ensure they're registered
+        # Category creation will be handled by a data migration or management command
+

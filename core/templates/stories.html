@@ -4,121 +4,331 @@
 
 {% block content %}
 <div class="container mt-5">
-
-    <h2 class="mb-3 text-center">Community Stories</h2>
-
-    <!-- Category Filter Only -->
-    <form method="get" class="mb-4 d-flex gap-2">
-        <select name="category" class="form-select">
-            <option value="">All Categories</option>
-            {% for cat in categories %}
-            <option value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>
-                {{ cat.name }}
-            </option>
-            {% endfor %}
+  <!-- Header -->
+  <div class="d-flex align-items-center justify-content-between mb-5">
+    <div>
+      <h1 class="display-5 fw-bold page-heading">
+        <i class="bi bi-people-fill me-2"></i>Community Stories
+      </h1>
+      <p class="lead text-white mb-0">Share your journey, inspire others, and find support in our community</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center">
+      <form method="get" class="d-flex align-items-center gap-2 mb-0">
+        <select name="category" class="form-select form-select-md filter-select me-2">
+          <option value="">All Categories</option>
+          {% for cat in categories %}
+          <option class="text-black" value="{{ cat.id }}" {% if selected_category == cat.id|stringformat:"s" %}selected{% endif %}>
+            {{ cat.name }}
+          </option>
+          {% endfor %}
         </select>
-        <button type="submit" class="btn btn-primary">Filter</button>
-    </form>
+        <button type="submit" class="btn btn-sm btn-outline-light">
+          <i class="bi bi-funnel me-1"></i>Filter
+        </button>
+      </form>
+    </div>
+  </div>
 
-    <!-- Top Reacted Stories -->
-    {% if top_posts %}
-    <h4 class="mb-3">Top Reacted Stories</h4>
-    <div class="row mb-4">
-        {% for post in top_posts %}
-        <div class="col-md-4">
-            <div class="card shadow-sm mb-3">
-                <div class="card-body">
-                    <p>{{ post.content|truncatechars:100 }}</p>
-                    <p class="text-muted small mb-1">
-                        by {{ post.display_author }} | Total Reactions: {{ post.total_reactions }}
-                    </p>
+  <!-- Top Stories -->
+  {% if top_stories %}
+  <section class="mb-5">
+    <div class="section-header d-flex align-items-center gap-3 mb-4">
+      <div class="badge-pill bg-gradient-primary px-3 py-2">🔥 Top Reacted</div>
+      <h3 class="mb-0 section-title">Top Stories</h3>
+    </div>
 
-                    {% if user.is_authenticated %}
-                    <div class="d-flex gap-2 mt-2">
-                        <button class="btn btn-outline-danger btn-sm react-btn {% if 'heart' in post.user_reactions %}active btn-danger{% endif %}" data-post-id="{{ post.id }}" data-reaction="heart">
-                            ❤️ <span class="reaction-count">{{ post.reaction_counts.heart }}</span>
-                        </button>
-                        <button class="btn btn-outline-warning btn-sm react-btn {% if 'hug' in post.user_reactions %}active btn-warning{% endif %}" data-post-id="{{ post.id }}" data-reaction="hug">
-                            🤗 <span class="reaction-count">{{ post.reaction_counts.hug }}</span>
-                        </button>
-                        <button class="btn btn-outline-primary btn-sm react-btn {% if 'hands' in post.user_reactions %}active btn-primary{% endif %}" data-post-id="{{ post.id }}" data-reaction="hands">
-                            🙌 <span class="reaction-count">{{ post.reaction_counts.hands }}</span>
-                        </button>
-                    </div>
-                    {% else %}
-                    <p class="mt-2"><a href="{% url 'core:login' %}" class="btn btn-primary btn-sm">Login to React</a></p>
-                    {% endif %}
-
-                    <a href="{% url 'core:post_detail' post.id %}" class="btn btn-sm btn-success mt-2 w-100">Read More</a>
+    <div class="row g-4">
+      {% for story in top_stories %}
+      <div class="col-md-6 col-lg-4">
+        <article class="card story-card top-story h-100">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div class="d-flex align-items-center gap-3">
+                <div class="avatar-large">{{ story.display_author|slice:":1"|upper }}</div>
+                <div>
+                  <strong class="d-block text-white">{{ story.display_author }}</strong>
+                  <small class="text-muted">{{ story.created_at|timesince }} ago</small>
                 </div>
+              </div>
+              <span class="pill small text-muted">Top</span>
             </div>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
 
-    <!-- All Stories -->
-    <h4 class="mb-3">All Stories</h4>
-    {% for post in posts %}
-    <div class="card mb-3 shadow-sm">
-        <div class="card-body">
-            <p>{{ post.content|truncatechars:150 }}</p>
-            <p class="text-muted small mb-2">
-                by {{ post.display_author }} on {{ post.created_at|date:"M d, Y H:i" }}
-            </p>
+            <p class="story-excerpt flex-grow-1">{{ story.content|truncatechars:140 }}</p>
 
-            {% if user.is_authenticated %}
-            <div class="d-flex gap-2 mt-2">
-                <button class="btn btn-outline-danger btn-sm react-btn {% if 'heart' in post.user_reactions %}active btn-danger{% endif %}" data-post-id="{{ post.id }}" data-reaction="heart">
-                    ❤️ <span class="reaction-count">{{ post.reaction_counts.heart }}</span>
-                </button>
-                <button class="btn btn-outline-warning btn-sm react-btn {% if 'hug' in post.user_reactions %}active btn-warning{% endif %}" data-post-id="{{ post.id }}" data-reaction="hug">
-                    🤗 <span class="reaction-count">{{ post.reaction_counts.hug }}</span>
-                </button>
-                <button class="btn btn-outline-primary btn-sm react-btn {% if 'hands' in post.user_reactions %}active btn-primary{% endif %}" data-post-id="{{ post.id }}" data-reaction="hands">
-                    🙌 <span class="reaction-count">{{ post.reaction_counts.hands }}</span>
-                </button>
+            <div class="mt-3">
+              {% if user.is_authenticated %}
+              <div class="d-flex gap-2 mb-3 reaction-row">
+                <button class="btn reaction-btn {% if 'heart' in story.user_reactions %}active{% endif %}"
+                        data-story-id="{{ story.id }}" data-reaction-type="heart">❤️ <span>{{ story.reaction_counts.heart }}</span></button>
+                <button class="btn reaction-btn {% if 'hug' in story.user_reactions %}active{% endif %}"
+                        data-story-id="{{ story.id }}" data-reaction-type="hug">🤗 <span>{{ story.reaction_counts.hug }}</span></button>
+                <button class="btn reaction-btn {% if 'hands' in story.user_reactions %}active{% endif %}"
+                        data-story-id="{{ story.id }}" data-reaction-type="hands">🙌 <span>{{ story.reaction_counts.hands }}</span></button>
+              </div>
+              {% else %}
+              <div class="mb-3">
+                <a href="{% url 'core:login' %}" class="btn btn-sm btn-outline-light">Login to React</a>
+              </div>
+              {% endif %}
+              <a href="{% url 'core:story_detail' story.id %}" class="btn btn-gradient w-100">Read Full Story <i class="bi bi-arrow-right ms-2"></i></a>
             </div>
-            {% else %}
-            <p class="mt-2"><a href="{% url 'core:login' %}" class="btn btn-primary btn-sm">Login to React</a></p>
-            {% endif %}
-
-            <a href="{% url 'core:post_detail' post.id %}" class="btn btn-secondary btn-sm mt-2 btn-success">Read More</a>
-        </div>
+          </div>
+        </article>
+      </div>
+      {% endfor %}
     </div>
-    {% empty %}
-    <p>No stories found.</p>
-    {% endfor %}
+  </section>
+  {% endif %}
+
+  <!-- All Stories -->
+  <section class="mb-5">
+    <div class="section-header d-flex align-items-center gap-3 mb-4">
+      <div class="section-line"></div>
+      <h3 class="mb-0 section-title"><i class="bi bi-journal-text me-2"></i>All Stories</h3>
+      <div class="section-line"></div>
+    </div>
+
+    {% if stories %}
+    <div class="row g-4">
+      {% for story in stories %}
+      <div class="col-sm-12 col-md-6 col-lg-4">
+        <article class="card story-card h-100">
+          <div class="card-body d-flex flex-column">
+            <div class="d-flex align-items-center mb-3">
+              <div class="avatar-circle me-3">{{ story.display_author|slice:":1"|upper }}</div>
+              <div class="flex-grow-1">
+                <strong class="d-block text-white">{{ story.display_author }}</strong>
+                <small class="text-muted">{{ story.created_at|timesince }} ago</small>
+              </div>
+              <div class="ms-2 text-end">
+                {% if story.total_reactions %}
+                <span class="badge reaction-count">{{ story.total_reactions }}</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <p class="story-excerpt mb-4">{{ story.content|truncatechars:150 }}</p>
+
+            <div class="mt-auto">
+              {% if user.is_authenticated %}
+              <div class="d-flex gap-2 mb-3 reaction-row">
+                <button class="btn reaction-btn {% if 'heart' in story.user_reactions %}active{% endif %}"
+                        data-story-id="{{ story.id }}" data-reaction-type="heart">❤️ <span>{{ story.reaction_counts.heart }}</span></button>
+                <button class="btn reaction-btn {% if 'hug' in story.user_reactions %}active{% endif %}"
+                        data-story-id="{{ story.id }}" data-reaction-type="hug">🤗 <span>{{ story.reaction_counts.hug }}</span></button>
+                <button class="btn reaction-btn {% if 'hands' in story.user_reactions %}active{% endif %}"
+                        data-story-id="{{ story.id }}" data-reaction-type="hands">🙌 <span>{{ story.reaction_counts.hands }}</span></button>
+              </div>
+              {% else %}
+              <div class="mb-3">
+                <a href="{% url 'core:login' %}" class="btn btn-sm btn-outline-light">Login to React</a>
+              </div>
+              {% endif %}
+              <a href="{% url 'core:story_detail' story.id %}" class="btn btn-gradient w-100">Read Full Story <i class="bi bi-arrow-right ms-2"></i></a>
+            </div>
+          </div>
+        </article>
+      </div>
+      {% endfor %}
+    </div>
 
     <!-- Pagination -->
-    <nav aria-label="Page navigation">
-        <ul class="pagination justify-content-center">
-            {% if posts.has_previous %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ posts.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">Previous</a>
-            </li>
-            {% else %}
-            <li class="page-item disabled"><span class="page-link">Previous</span></li>
-            {% endif %}
+    <nav aria-label="Page navigation" class="mt-4">
+      <ul class="pagination justify-content-center pagination-modern">
+        {% if stories.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ stories.previous_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">
+            <i class="bi bi-chevron-left me-2"></i>Previous
+          </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">Previous</span></li>
+        {% endif %}
 
-            {% for num in posts.paginator.page_range %}
-            <li class="page-item {% if posts.number == num %}active{% endif %}">
-                <a class="page-link" href="?page={{ num }}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
-            </li>
-            {% endfor %}
+        {% for num in stories.paginator.page_range %}
+        <li class="page-item {% if stories.number == num %}active{% endif %}">
+          <a class="page-link" href="?page={{ num }}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
+        </li>
+        {% endfor %}
 
-            {% if posts.has_next %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ posts.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">Next</a>
-            </li>
-            {% else %}
-            <li class="page-item disabled"><span class="page-link">Next</span></li>
-            {% endif %}
-        </ul>
+        {% if stories.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ stories.next_page_number }}{% if selected_category %}&category={{ selected_category }}{% endif %}">
+            Next <i class="bi bi-chevron-right ms-2"></i>
+          </a>
+        </li>
+        {% else %}
+        <li class="page-item disabled"><span class="page-link">Next</span></li>
+        {% endif %}
+      </ul>
     </nav>
 
+    {% else %}
+    <div class="text-center py-5 empty-state">
+      <i class="bi bi-inbox display-1 text-muted mb-3"></i>
+      <h4 class="text-white mb-2">No stories found</h4>
+      <p class="text-white mb-3">Be the first to share your story with the community!</p>
+      {% if user.is_authenticated %}
+      {% else %}
+      <a href="{% url 'core:login' %}" class="btn btn-outline-light">Login to Share</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- CTA -->
+  {% if user.is_authenticated %}
+  <div class="text-center mt-5">
+    <div class="cta-card p-4 mx-auto">
+      <h5 class="mb-2 text-white">Your voice matters</h5>
+      <p class="text-white mb-3">Share experiences that could help someone else today.</p>
+      <a href="{% url 'core:create_story' %}" class="btn btn-gradient btn-lg"><i class="bi bi-plus-circle me-2"></i>Create New Story</a>
+    </div>
+  </div>
+  {% endif %}
 </div>
 
-<!-- AJAX Script -->
+<!-- Styles -->
+<style>
+  /* Page heading */
+  .page-heading {
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    text-shadow: 0 6px 18px rgba(0,0,0,0.45);
+    margin-bottom: 0.25rem;
+  }
+
+  /* Filter select */
+  .filter-select {
+    min-width: 160px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    color: #fff;
+  }
+
+  /* Section header */
+  .section-header { align-items: center; }
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(138,43,226,0.6), transparent);
+  }
+  .section-title {
+    color: #fff;
+    font-weight: 700;
+    margin: 0 12px;
+  }
+  .badge-pill {
+    border-radius: 999px;
+    background: linear-gradient(90deg, #ff9ac4, #8a2be2);
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(138,43,226,0.12);
+  }
+
+  /* Cards */
+  .story-card {
+    background: linear-gradient(135deg, rgba(20,20,20,0.9), rgba(28,24,36,0.85));
+    border: 1px solid rgba(255,255,255,0.04);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: transform .28s ease, box-shadow .28s ease;
+  }
+  .story-card:hover {
+    transform: translateY(-6px) scale(1.01);
+    box-shadow: 0 20px 50px rgba(10,8,20,0.6);
+    border-color: rgba(138,43,226,0.7);
+  }
+  .top-story {
+    background: linear-gradient(135deg, rgba(34,10,56,0.95), rgba(24,8,40,0.95));
+    border: 1px solid rgba(138,43,226,0.28);
+  }
+
+  .card .card-body { padding: 1.35rem; }
+
+  /* Avatars */
+  .avatar-circle, .avatar-large {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    background: linear-gradient(135deg, #8a2be2, #ff69b4);
+    font-weight: 700;
+    box-shadow: 0 6px 18px rgba(138,43,226,0.14);
+  }
+  .avatar-large { width: 56px; height: 56px; font-size: 1.1rem; }
+
+  .story-excerpt { color: rgba(235,235,235,0.92); line-height: 1.6; font-size: 0.98rem; }
+
+  .pill { background: rgba(255,255,255,0.04); padding: 0.25rem 0.6rem; border-radius: 999px; font-size: 0.8rem; }
+
+  /* Reactions */
+  .reaction-row { flex-wrap: wrap; }
+  .reaction-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.06);
+    color: #fff;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    transition: transform .18s ease, background .18s ease, color .18s ease;
+  }
+  .reaction-btn span { margin-left: 6px; opacity: 0.9; font-weight: 600; }
+  .reaction-btn:hover { transform: translateY(-3px); border-color: rgba(138,43,226,0.6); box-shadow: 0 8px 20px rgba(138,43,226,0.08); }
+  .reaction-btn.active { background: linear-gradient(90deg, #ff9ac4, #8a2be2); color: #111; border: none; transform: scale(1.05); }
+
+  .reaction-count {
+    background: rgba(255,255,255,0.04);
+    color: #fff;
+    padding: 0.25rem 0.5rem;
+    border-radius: 8px;
+  }
+
+  /* Buttons */
+  .btn-gradient {
+    background: linear-gradient(90deg, #8a2be2, #ff69b4);
+    color: #fff;
+    border: none;
+    box-shadow: 0 8px 24px rgba(138,43,226,0.12);
+  }
+  .btn-gradient:hover { transform: translateY(-3px); box-shadow: 0 18px 44px rgba(138,43,226,0.18); }
+
+  /* Pagination */
+  .pagination-modern .page-link {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.04);
+    color: #fff;
+    margin: 0 0.2rem;
+    border-radius: 8px;
+  }
+  .pagination-modern .page-item.active .page-link {
+    background: linear-gradient(90deg, #8a2be2, #ff69b4);
+    border-color: transparent;
+  }
+
+  /* CTA card */
+  .cta-card {
+    background: linear-gradient(180deg, rgba(18,18,18,0.7), rgba(28,28,28,0.7));
+    border-radius: 14px;
+    border: 1px solid rgba(138,43,226,0.12);
+    max-width: 720px;
+  }
+
+  /* Empty state */
+  .empty-state i { font-size: 4.25rem; color: rgba(255,255,255,0.12); }
+
+  /* Responsive tweaks */
+  @media (max-width: 768px) {
+    .page-heading { font-size: 1.6rem; }
+    .avatar-large { display: none; }
+    .btn-gradient.d-none.d-md-inline-flex { display: inline-flex !important; }
+  }
+</style>
+
+<!-- AJAX script for reaction buttons (same path you had) -->
 <script src="{% static 'core/js/react.js' %}"></script>
 {% endblock %}
