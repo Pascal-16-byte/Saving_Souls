@@ -1,32 +1,79 @@
-document.addEventListener("DOMContentLoaded", () => {
-    const buttons = document.querySelectorAll('.react-btn');
+// static/core/js/react.js
+document.addEventListener('DOMContentLoaded', () => {
+  // select all reaction buttons rendered in stories.html
+  const reactionButtons = document.querySelectorAll('.reaction-btn');
 
-    buttons.forEach(button => {
-        button.addEventListener('click', () => {
-            const storyId = button.dataset.storyId;
-            const reactionType = button.dataset.reaction;
+  reactionButtons.forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
 
-            fetch(`/stories/${storyId}/react/${reactionType}/`)
-                .then(response => response.json())
-                .then(data => {
-                    const parent = button.parentElement;
+      const storyId = btn.dataset.storyId;
+      const reactionType = btn.dataset.reactionType;
+      if (!storyId || !reactionType) return;
 
-                    // Update counts
-                    parent.querySelector('[data-reaction="heart"] .reaction-count').textContent = data.reactions_count.heart;
-                    parent.querySelector('[data-reaction="hug"] .reaction-count').textContent = data.reactions_count.hug;
-                    parent.querySelector('[data-reaction="hands"] .reaction-count').textContent = data.reactions_count.hands;
+      // URL pattern expected by your Django view:
+      // react_to_story(request, story_id, reaction_type)
+      const url = `/react_to_story/${storyId}/${reactionType}/`;
 
-                    // Remove active from all buttons
-                    parent.querySelectorAll('.react-btn').forEach(btn => btn.classList.remove('active', 'btn-danger', 'btn-warning', 'btn-primary'));
-
-                    // Highlight the button the user clicked
-                    if (data.reacted === reactionType) {
-                        if (reactionType === 'heart') button.classList.add('active', 'btn-danger');
-                        if (reactionType === 'hug') button.classList.add('active', 'btn-warning');
-                        if (reactionType === 'hands') button.classList.add('active', 'btn-primary');
-                    }
-                })
-                .catch(error => console.error('Error:', error));
+      try {
+        const resp = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Accept': 'application/json'
+          },
+          credentials: 'same-origin'
         });
+
+        // If user not logged in, view may redirect — handle common cases:
+        if (resp.status === 403 || resp.status === 401) {
+          // not authorized -> redirect to login
+          window.location.href = '/login/';
+          return;
+        }
+
+        if (!resp.ok) {
+          console.error('Reaction request failed', resp.status);
+          return;
+        }
+
+        const data = await resp.json();
+
+        // Your view returns { "reactions_count": {...}, "reacted": <reactionType|null> }
+        const counts = data.reactions_count || data.reactions_count || data.counts || {};
+        const reacted = data.reacted ?? data.user_reacted ?? null;
+
+        // Update counts for each reaction button belonging to this story
+        const storyBtns = document.querySelectorAll(`.reaction-btn[data-story-id="${storyId}"]`);
+        storyBtns.forEach(b => {
+          const type = b.dataset.reactionType;
+          // Update the numeric span inside the button
+          const span = b.querySelector('span');
+          if (span) {
+            // counts could be keys like 'heart','hug','hands'
+            span.textContent = counts[type] ?? span.textContent;
+          }
+          // Manage active state: if server says reacted === type, mark active; otherwise remove
+          if (reacted && reacted === type) {
+            b.classList.add('active');
+          } else {
+            b.classList.remove('active');
+          }
+        });
+
+      } catch (err) {
+        console.error('Error reacting to story:', err);
+      }
     });
+  });
 });
+
+/**
+ * Minimal getCookie helper to fetch CSRF token from cookies
+ */
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+  return null;
+}

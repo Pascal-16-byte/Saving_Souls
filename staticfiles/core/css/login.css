@@ -3,6 +3,7 @@
     justify-content: center;
     align-items: center;
     padding: 40px 20px;
+    min-height: 80vh;
   }
   
   .signup-card {
@@ -71,6 +72,7 @@
   
   .login-link:hover {
     text-decoration: underline;
+    color: black;
   }
   
   .category-item.selected {
@@ -90,4 +92,29 @@
   .signup-card h2 {
     color: #0d6efd;
   }
+  
+  /* Form styling fixes */
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+    color: #495057;
+  }
+  
+  .form-group input {
+    width: 100%;
+    padding: 10px 15px;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s;
+    color: black;
+  }
+  
+  .form-group input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    outline: none;
+  }
+  
   

@@ -4,7 +4,7 @@ gunicorn
 whitenoise
 
 # --- Database ---
-psycopg2-binary==<latest>
+psycopg2-binary
 dj-database-url
 
 # --- Environment Management ---
